@@ -32,21 +32,28 @@ poker_winnings = {
 SCREEN_WIDTH = 640
 FPS = 24
 
+INDENTATION = 20
 COMBINATION_CELL_WIDTH = 200
 WINNING_CELL_WIDTH = 80
 CELL_HEIGHT = 30
 BORDER_WIDTH = 2
 TABLE_SURFACE_X = TABLE_SURFACE_Y = 0
-TABLE_X = TABLE_Y = 20
+TABLE_X = TABLE_Y = INDENTATION
 TABLE_HEIGHT = CELL_HEIGHT * len(poker_winnings)
-TABLE_SURFACE_SIZE = (SCREEN_WIDTH, TABLE_HEIGHT + 40)
-CARDS_HEIGHT = 200
-CARDS_SURFACE_SIZE = (SCREEN_WIDTH, CARDS_HEIGHT + 40)
+TABLE_SURFACE_SIZE = (SCREEN_WIDTH, TABLE_HEIGHT + INDENTATION*2)
+CARD_BACKGROUND_WIDTH = 94
+CARD_BACKGROUND_HEIGHT = 140
+CARD_WIDTH = 86
+CARD_HEIGHT = 130
+CARDS_SURFACE_X = TABLE_SURFACE_X
+CARDS_SURFACE_Y = TABLE_SURFACE_SIZE[1]
+CARDS_SURFACE_SIZE = (SCREEN_WIDTH, CARD_BACKGROUND_HEIGHT + INDENTATION*2)
 
 DISPLAY_MODE = (SCREEN_WIDTH, TABLE_SURFACE_SIZE[1] + CARDS_SURFACE_SIZE[1])
 
 BACKGROUND_COLOR = (0, 65, 15)  # (0, 25, 50) - dark blue
-TABLE_BORDER_COLOR = FONT_COLOR = (155, 155, 0)
+TABLE_BORDER_COLOR = FONT_COLOR = CARD_BACKGROUND_COLOR = (155, 155, 0)
+CARD_ACTIVE_COLOR = (208, 113, 30)
 
 
 # File paths
@@ -54,6 +61,46 @@ DATA_DIR = 'data'
 FONT_NAME = 'arial.ttf'
 FONT_SIZE = 16
 ANTIALIASING = 1
+
+
+class Card(object):
+    """Represents playing card"""
+
+    def __init__(self, centerx=0):
+        self.centerx = centerx
+        self.centery = int(CARD_BACKGROUND_HEIGHT/2)
+        self.background_rect = pygame.Rect(
+            centerx - int(CARD_BACKGROUND_WIDTH/2),
+            self.centery - int(CARD_BACKGROUND_HEIGHT/2),
+            CARD_BACKGROUND_WIDTH, CARD_BACKGROUND_HEIGHT)
+        self.active = False
+        self.card = 'back'
+        self.held = False
+        self.text = font.render('HELD', ANTIALIASING, FONT_COLOR)
+        self.text_rect = self.text.get_rect()
+        self.text_rect.centerx = self.centerx
+        self.text_rect.centery =\
+            self.centery + int(CARD_BACKGROUND_HEIGHT/2) +\
+            int(self.text_rect.height/2) + INDENTATION
+
+    def draw(self):
+        """Draw cards with background and text"""
+        if self.active:
+            pygame.draw.rect(cards_surface, CARD_ACTIVE_COLOR,
+                             self.background_rect, 0)
+        else:
+            pygame.draw.rect(cards_surface, CARD_BACKGROUND_COLOR,
+                             self.background_rect, 0)
+        # Write an exception! ...and some comments
+        raw_image = pygame.image.load(os.path.join(DATA_DIR,
+                                                   (self.card + '.png')))
+        card_image = pygame.transform.scale(raw_image,
+                                            (CARD_WIDTH, CARD_HEIGHT))
+        card_rect = card_image.get_rect()
+        card_rect.centerx = self.centerx
+        card_rect.centery = self.centery
+        cards_surface.blit(card_image, (card_rect.left, card_rect.top))
+        screen.blit(cards_surface, (CARDS_SURFACE_X, CARDS_SURFACE_Y))
 
 
 # Initialize library and create main window
@@ -104,6 +151,22 @@ for name in combination_names:
         table_surface.blit(text, text_rect)
     combination_rect.top += CELL_HEIGHT - 1
 screen.blit(table_surface, (TABLE_SURFACE_X, TABLE_SURFACE_Y))
+
+# Draw surface for cards
+cards_surface = pygame.Surface(CARDS_SURFACE_SIZE)
+cards_surface.fill(BACKGROUND_COLOR)
+cards_surface = cards_surface.convert()
+
+# Initialize cards
+cards = []
+for x in range(int(INDENTATION + CARD_BACKGROUND_WIDTH/2),
+               (CARD_BACKGROUND_WIDTH + INDENTATION + 11)*5,
+               CARD_BACKGROUND_WIDTH + INDENTATION + 11):
+    cards.append(Card(x))
+
+# Draw cards
+for card in cards:
+    card.draw()
 
 # Main event loop
 mainloop = True
