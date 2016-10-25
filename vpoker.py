@@ -11,6 +11,14 @@ import pygame
 from pygame.locals import *
 
 
+suits = {
+    'S': '♠',  # Spades
+    'C': '♣',  # Clubs
+    'H': '♥',  # Hearts
+    'D': '♦'   # Diamonds
+}
+ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+
 combination_names = ['Royal Flush', 'Straight Flush', 'Four of a Kind',
                      'Full House', 'Flush', 'Straight', 'Three of a Kind',
                      'Two Pairs', 'Tens or Better']
@@ -54,6 +62,7 @@ DISPLAY_MODE = (SCREEN_WIDTH, TABLE_SURFACE_SIZE[1] + CARDS_SURFACE_SIZE[1])
 BACKGROUND_COLOR = (0, 65, 15)  # (0, 25, 50) - dark blue
 TABLE_BORDER_COLOR = FONT_COLOR = CARD_BACKGROUND_COLOR = (155, 155, 0)
 CARD_ACTIVE_COLOR = (208, 113, 30)
+CARD_FONT_COLOR = (0, 0, 0)
 
 
 # File paths
@@ -74,34 +83,68 @@ class Card(object):
             self.centery - int(CARD_BACKGROUND_HEIGHT/2),
             CARD_BACKGROUND_WIDTH, CARD_BACKGROUND_HEIGHT)
         self.active = False
-        self.card = 'back'
+        self.card = 'BACK'
         self.held = False
-        self.text = font.render('HELD', ANTIALIASING, FONT_COLOR)
-        self.text_rect = self.text.get_rect()
-        self.text_rect.centerx = self.centerx
-        self.text_rect.centery =\
-            self.centery + int(CARD_BACKGROUND_HEIGHT/2) +\
-            int(self.text_rect.height/2) + INDENTATION
 
     def draw(self):
-        """Draw cards with background and text"""
+        """Draw card with background and text"""
+
+        # Draw card's background
         if self.active:
             pygame.draw.rect(cards_surface, CARD_ACTIVE_COLOR,
                              self.background_rect, 0)
         else:
             pygame.draw.rect(cards_surface, CARD_BACKGROUND_COLOR,
                              self.background_rect, 0)
-        # Write an exception! ...and some comments
+
+        # Try to load card's image
         raw_image = pygame.image.load(os.path.join(DATA_DIR,
-                                                   (self.card + '.png')))
-        card_image = pygame.transform.scale(raw_image,
-                                            (CARD_WIDTH, CARD_HEIGHT))
+                                                   (str(self.card) + '.png')))
+        if raw_image:
+            card_image = pygame.transform.scale(raw_image,
+                                                (CARD_WIDTH, CARD_HEIGHT))
+        else:
+            print('Cannot load image: ',
+                  os.path.join(DATA_DIR, (str(self.card) + '.png')))
+            print('Using text instead')
+            if self.card == 'BACK':
+                card_image = font.render('BACK', ANTIALIASING,
+                                         CARD_FONT_COLOR)
+            else:
+                card_image = font.render((suits[self.card[0]] + self.card[1]),
+                                         ANTIALIASING, CARD_FONT_COLOR)
+        # Draw image
         card_rect = card_image.get_rect()
         card_rect.centerx = self.centerx
         card_rect.centery = self.centery
         cards_surface.blit(card_image, (card_rect.left, card_rect.top))
         screen.blit(cards_surface, (CARDS_SURFACE_X, CARDS_SURFACE_Y))
 
+        # Draw status text
+        if self.held:
+            status = font.render('HELD', ANTIALIASING, FONT_COLOR)
+        else:
+            status = font.render('HELD', ANTIALIASING, BACKGROUND_COLOR)
+        status_rect = status.get_rect()
+        status_rect.centerx = self.centerx
+        status_rect.centery = self.centery + int(CARD_BACKGROUND_HEIGHT/2) +\
+            int(status_rect.height/2) + int(INDENTATION/2)
+        cards_surface.blit(status, (status_rect.left, status_rect.top))
+
+
+def init_deck():
+    """
+    Initialize playing deck
+
+    :return: deck with 52 playing cards
+    :type: list
+    """
+
+    deck = []
+    for suit in suits:
+        for rank in ranks:
+            deck.append(tuple(suit + rank))
+    return deck
 
 # Initialize library and create main window
 pygame.init()
