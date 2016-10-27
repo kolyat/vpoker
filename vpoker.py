@@ -7,6 +7,7 @@ Main unit of vpoker
 """
 
 import os
+import random
 import pygame
 from pygame.locals import *
 
@@ -60,7 +61,8 @@ CARDS_SURFACE_SIZE = (SCREEN_WIDTH, CARD_BACKGROUND_HEIGHT + INDENTATION*2)
 DISPLAY_MODE = (SCREEN_WIDTH, TABLE_SURFACE_SIZE[1] + CARDS_SURFACE_SIZE[1])
 
 BACKGROUND_COLOR = (0, 65, 15)  # (0, 25, 50) - dark blue
-TABLE_BORDER_COLOR = FONT_COLOR = CARD_BACKGROUND_COLOR = (155, 155, 0)
+TABLE_BORDER_COLOR = FONT_COLOR = CARD_BACKGROUND_COLOR = (175, 175, 0)
+TABLE_SELECTED_COLOR = (0, 100, 20)
 CARD_ACTIVE_COLOR = (208, 113, 30)
 CARD_FONT_COLOR = (0, 0, 0)
 
@@ -76,12 +78,22 @@ class Card(object):
     """Represents playing card"""
 
     def __init__(self, centerx=0):
+        """
+        Class Card constructor
+
+        :param centerx: x-coordinate of card's center, default = 0
+        :type: int
+        :arg centery: y-coordinate of card's center
+        :type: int
+        :arg active: currently selected card
+        :type: bool
+        :arg card: represents playing card or it's back
+        :type: str ('BACK')
+        :type: tuple
+        :arg: held: if kept in hand
+        """
         self.centerx = centerx
         self.centery = int(CARD_BACKGROUND_HEIGHT/2)
-        self.background_rect = pygame.Rect(
-            centerx - int(CARD_BACKGROUND_WIDTH/2),
-            self.centery - int(CARD_BACKGROUND_HEIGHT/2),
-            CARD_BACKGROUND_WIDTH, CARD_BACKGROUND_HEIGHT)
         self.active = False
         self.card = 'BACK'
         self.held = False
@@ -90,16 +102,20 @@ class Card(object):
         """Draw card with background and text"""
 
         # Draw card's background
+        background_rect = pygame.Rect(
+            self.centerx - int(CARD_BACKGROUND_WIDTH/2),
+            self.centery - int(CARD_BACKGROUND_HEIGHT/2),
+            CARD_BACKGROUND_WIDTH, CARD_BACKGROUND_HEIGHT)
         if self.active:
             pygame.draw.rect(cards_surface, CARD_ACTIVE_COLOR,
-                             self.background_rect, 0)
+                             background_rect, 0)
         else:
             pygame.draw.rect(cards_surface, CARD_BACKGROUND_COLOR,
-                             self.background_rect, 0)
+                             background_rect, 0)
 
         # Try to load card's image
-        raw_image = pygame.image.load(os.path.join(DATA_DIR,
-                                                   (str(self.card) + '.png')))
+        raw_image = pygame.image.load(
+            os.path.join(DATA_DIR, ''.join(self.card) + '.png'))
         if raw_image:
             card_image = pygame.transform.scale(raw_image,
                                                 (CARD_WIDTH, CARD_HEIGHT))
@@ -131,6 +147,22 @@ class Card(object):
             int(status_rect.height/2) + int(INDENTATION/2)
         cards_surface.blit(status, (status_rect.left, status_rect.top))
 
+    def set_card(self, current_card):
+        """
+        Set card from playing deck
+
+        :param current_card: card from deck
+        :type: str ('BACK')
+        :type: tuple
+        """
+
+        self.card = current_card
+
+    def set_active(self):
+        """Card is active"""
+
+        self.active = True
+
 
 def init_deck():
     """
@@ -145,6 +177,50 @@ def init_deck():
         for rank in ranks:
             deck.append(tuple(suit + rank))
     return deck
+
+
+def draw_table():
+    """
+    Draw table with winning combinations
+    """
+
+    # Draw surface for winning combinations table
+    table_surface = pygame.Surface(TABLE_SURFACE_SIZE)
+    table_surface.fill(BACKGROUND_COLOR)
+    table_surface = table_surface.convert()
+
+    # Draw cell for winning combination's name
+    combination_rect = pygame.Rect(TABLE_X, TABLE_Y, COMBINATION_CELL_WIDTH,
+                                   CELL_HEIGHT)
+    for name in combination_names:
+        pygame.draw.rect(table_surface, TABLE_BORDER_COLOR, combination_rect,
+                         BORDER_WIDTH)
+        # Print combination's name
+        text = font.render(name, ANTIALIASING, FONT_COLOR)
+        text_rect = text.get_rect()
+        text_rect.centerx = combination_rect.centerx
+        text_rect.centery = combination_rect.centery
+        table_surface.blit(text, text_rect)
+        # Draw cells for amount of winning coins of current combination
+        winning_rect = pygame.Rect(TABLE_X + COMBINATION_CELL_WIDTH - 1,
+                                   combination_rect.top, WINNING_CELL_WIDTH,
+                                   CELL_HEIGHT)
+        for i, item in enumerate(poker_winnings[name], start=1):
+            if coins == i:
+                pygame.draw.rect(table_surface, TABLE_SELECTED_COLOR,
+                                 winning_rect, 0)
+            pygame.draw.rect(table_surface, TABLE_BORDER_COLOR, winning_rect,
+                             BORDER_WIDTH)
+            # Print number of winning coins
+            text = font.render(str(item), ANTIALIASING, FONT_COLOR)
+            text_rect = text.get_rect()
+            text_rect.centerx = winning_rect.centerx
+            text_rect.centery = winning_rect.centery
+            winning_rect.left += WINNING_CELL_WIDTH - 1
+            table_surface.blit(text, text_rect)
+        combination_rect.top += CELL_HEIGHT - 1
+    screen.blit(table_surface, (TABLE_SURFACE_X, TABLE_SURFACE_Y))
+
 
 # Initialize library and create main window
 pygame.init()
@@ -161,63 +237,60 @@ except pygame.error as error:
     print('Using system default font')
     font = pygame.font.SysFont('None', FONT_SIZE)
 
-# Draw surface for winning combinations table
-table_surface = pygame.Surface(TABLE_SURFACE_SIZE)
-table_surface.fill(BACKGROUND_COLOR)
-table_surface = table_surface.convert()
+# Main game loop
+game_loop = True
+while game_loop:
+    coins = 1  # Number of inserted coins
+    deck = init_deck()  # Initialize playing deck
+    # Initialize random generator with current system time
+    random.seed(None)
+    # Initialize cards
+    cards = []
+    for x in range(int(INDENTATION + CARD_BACKGROUND_WIDTH / 2),
+                   (CARD_BACKGROUND_WIDTH + INDENTATION + 11) * 5,
+                   CARD_BACKGROUND_WIDTH + INDENTATION + 11):
+        cards.append(Card(x))
 
-# Draw cell for winning combination's name
-combination_rect = pygame.Rect(TABLE_X, TABLE_Y, COMBINATION_CELL_WIDTH,
-                               CELL_HEIGHT)
-for name in combination_names:
-    pygame.draw.rect(table_surface, TABLE_BORDER_COLOR, combination_rect,
-                     BORDER_WIDTH)
-    # Print combination's name
-    text = font.render(name, ANTIALIASING, FONT_COLOR)
-    text_rect = text.get_rect()
-    text_rect.centerx = combination_rect.centerx
-    text_rect.centery = combination_rect.centery
-    table_surface.blit(text, text_rect)
-    # Draw cells for amount of winning coins of current combination
-    winning_rect = pygame.Rect(TABLE_X + COMBINATION_CELL_WIDTH - 1,
-                               combination_rect.top, WINNING_CELL_WIDTH,
-                               CELL_HEIGHT)
-    for c in poker_winnings[name]:
-        pygame.draw.rect(table_surface, TABLE_BORDER_COLOR, winning_rect,
-                         BORDER_WIDTH)
-        # Print number of winning coins
-        text = font.render(str(c), ANTIALIASING, FONT_COLOR)
-        text_rect = text.get_rect()
-        text_rect.centerx = winning_rect.centerx
-        text_rect.centery = winning_rect.centery
-        winning_rect.left += WINNING_CELL_WIDTH - 1
-        table_surface.blit(text, text_rect)
-    combination_rect.top += CELL_HEIGHT - 1
-screen.blit(table_surface, (TABLE_SURFACE_X, TABLE_SURFACE_Y))
+    # Draw surface for cards
+    cards_surface = pygame.Surface(CARDS_SURFACE_SIZE)
+    cards_surface.fill(BACKGROUND_COLOR)
+    cards_surface = cards_surface.convert()
 
-# Draw surface for cards
-cards_surface = pygame.Surface(CARDS_SURFACE_SIZE)
-cards_surface.fill(BACKGROUND_COLOR)
-cards_surface = cards_surface.convert()
+    # Stage 1: insert coins to select amount of winning
+    stage = 1
+    draw_table()
+    for card in cards:
+        card.draw()
+    wait = True
+    while wait:
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_UP:
+                    if coins < 5:
+                        coins += 1
+                if event.key == K_DOWN:
+                    if coins > 1:
+                        coins -= 1
+                if event.key == K_RETURN:
+                    wait = False
+                draw_table()
+            if event.type == QUIT:
+                pygame.quit()
+                exit(0)
+        pygame.display.flip()
 
-# Initialize cards
-cards = []
-for x in range(int(INDENTATION + CARD_BACKGROUND_WIDTH/2),
-               (CARD_BACKGROUND_WIDTH + INDENTATION + 11)*5,
-               CARD_BACKGROUND_WIDTH + INDENTATION + 11):
-    cards.append(Card(x))
-
-# Draw cards
-for card in cards:
-    card.draw()
-
-# Main event loop
-mainloop = True
-while mainloop:
-    clock.tick(FPS)
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            mainloop = False
-    pygame.display.flip()
-
-pygame.quit()
+    # Stage 2: hand out cards, wait for player to hold some cards
+    stage = 2
+    for card in cards:
+        random_card = deck.pop(random.randint(0, len(deck)-1))
+        card.set_card(random_card)
+        card.draw()
+    wait = True
+    while wait:
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                exit(0)
+        pygame.display.flip()
