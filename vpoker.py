@@ -8,6 +8,7 @@ Main unit of vpoker
 
 import os
 import random
+import time
 import pygame
 from pygame.locals import *
 
@@ -59,6 +60,7 @@ CARDS_SURFACE_Y = TABLE_SURFACE_SIZE[1]
 CARDS_SURFACE_SIZE = (SCREEN_WIDTH, CARD_BACKGROUND_HEIGHT + INDENTATION*2)
 
 DISPLAY_MODE = (SCREEN_WIDTH, TABLE_SURFACE_SIZE[1] + CARDS_SURFACE_SIZE[1])
+ANIMATION_SPEED = 0.4
 
 BACKGROUND_COLOR = (0, 65, 15)  # (0, 25, 50) - dark blue
 TABLE_BORDER_COLOR = FONT_COLOR = CARD_BACKGROUND_COLOR = (175, 175, 0)
@@ -71,7 +73,7 @@ CARD_FONT_COLOR = (0, 0, 0)
 DATA_DIR = 'data'
 FONT_NAME = 'arial.ttf'
 FONT_SIZE = 16
-ANTIALIASING = 1
+ANTIALIASING = 0
 
 
 class Card(object):
@@ -158,10 +160,35 @@ class Card(object):
 
         self.card = current_card
 
-    def set_active(self):
-        """Card is active"""
+    def set_active(self, active=False):
+        """
+        Set state of a card: active or not
 
-        self.active = True
+        :param: active: card's state
+        :type: bool
+        """
+
+        self.active = active
+
+    def get_held(self):
+        """
+        Get 'held' status
+
+        :return: 'held' status
+        :type: bool
+        """
+
+        return self.held
+
+    def set_held(self, hold=False):
+        """
+        Set status 'held'
+
+        :param hold: 'held' status
+        :type: bool
+        """
+
+        self.held = hold
 
 
 def init_deck():
@@ -257,7 +284,6 @@ while game_loop:
     cards_surface = cards_surface.convert()
 
     # Stage 1: insert coins to select amount of winning
-    stage = 1
     draw_table()
     for card in cards:
         card.draw()
@@ -281,16 +307,57 @@ while game_loop:
         pygame.display.flip()
 
     # Stage 2: hand out cards, wait for player to hold some cards
-    stage = 2
+    active_card = 0
+    cards[active_card].set_active(True)
     for card in cards:
         random_card = deck.pop(random.randint(0, len(deck)-1))
         card.set_card(random_card)
         card.draw()
+        pygame.display.flip()
+        time.sleep(ANIMATION_SPEED)
     wait = True
     while wait:
         clock.tick(FPS)
         for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_LEFT:
+                    if active_card > 0:
+                        cards[active_card].set_active(False)
+                        active_card -= 1
+                        cards[active_card].set_active(True)
+                if event.key == K_RIGHT:
+                    if active_card < 4:
+                        cards[active_card].set_active(False)
+                        active_card += 1
+                        cards[active_card].set_active(True)
+                if event.key == K_SPACE:
+                    if cards[active_card].get_held():
+                        cards[active_card].set_held(False)
+                    else:
+                        cards[active_card].set_held(True)
+                if event.key == K_RETURN:
+                    wait = False
+                for card in cards:
+                    card.draw()
             if event.type == QUIT:
                 pygame.quit()
                 exit(0)
+            pygame.display.flip()
+    cards[active_card].set_active(False)
+
+    # Stage 3: remove cards that were not held
+    for card in cards:
+        if not card.get_held():
+            card.set_card('BACK')
+        card.draw()
+    pygame.display.flip()
+    time.sleep(ANIMATION_SPEED)
+
+    # Stage 4: hand out new cards
+    for card in cards:
+        if not card.get_held():
+            random_card = deck.pop(random.randint(0, len(deck)-1))
+            card.set_card(random_card)
+        card.draw()
         pygame.display.flip()
+        time.sleep(ANIMATION_SPEED)
