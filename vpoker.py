@@ -191,21 +191,6 @@ class Card(object):
         self.held = hold
 
 
-def init_deck():
-    """
-    Initialize playing deck
-
-    :return: deck with 52 playing cards
-    :type: list
-    """
-
-    deck = []
-    for suit in suits:
-        for rank in ranks:
-            deck.append(tuple(suit + rank))
-    return deck
-
-
 def draw_table():
     """
     Draw table with winning combinations
@@ -214,7 +199,7 @@ def draw_table():
     # Draw surface for winning combinations table
     table_surface = pygame.Surface(TABLE_SURFACE_SIZE)
     table_surface.fill(BACKGROUND_COLOR)
-    table_surface = table_surface.convert()
+    # table_surface = table_surface.convert()
 
     # Draw cell for winning combination's name
     combination_rect = pygame.Rect(TABLE_X, TABLE_Y, COMBINATION_CELL_WIDTH,
@@ -268,7 +253,11 @@ except pygame.error as error:
 game_loop = True
 while game_loop:
     coins = 1  # Number of inserted coins
-    deck = init_deck()  # Initialize playing deck
+    # Initialize playing deck
+    deck = []
+    for suit in suits:
+        for rank in ranks:
+            deck.append(tuple(suit + rank))
     # Initialize random generator with current system time
     random.seed(None)
     # Initialize cards
@@ -281,7 +270,7 @@ while game_loop:
     # Draw surface for cards
     cards_surface = pygame.Surface(CARDS_SURFACE_SIZE)
     cards_surface.fill(BACKGROUND_COLOR)
-    cards_surface = cards_surface.convert()
+    # cards_surface = cards_surface.convert()
 
     # Stage 1: insert coins to select amount of winning
     draw_table()
@@ -361,3 +350,5 @@ while game_loop:
         card.draw()
         pygame.display.flip()
         time.sleep(ANIMATION_SPEED)
+
+    # Stage 5
