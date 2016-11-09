@@ -11,31 +11,7 @@ import random
 import time
 import pygame
 from pygame.locals import *
-
-
-suits = {
-    'S': '♠',  # Spades
-    'C': '♣',  # Clubs
-    'H': '♥',  # Hearts
-    'D': '♦'   # Diamonds
-}
-ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
-
-combination_names = ['Royal Flush', 'Straight Flush', 'Four of a Kind',
-                     'Full House', 'Flush', 'Straight', 'Three of a Kind',
-                     'Two Pairs', 'Tens or Better']
-# 'Tens or Better' winning combinations
-poker_winnings = {
-    'Royal Flush':     [500, 1000, 2000, 3000, 4000],
-    'Straight Flush':  [50,  100,  150,  200,  250],
-    'Four of a Kind':  [25,  50,   75,   100,  125],
-    'Full House':      [6,   12,   18,   24,   30],
-    'Flush':           [5,   10,   15,   20,   25],
-    'Straight':        [4,   8,    12,   16,   20],
-    'Three of a Kind': [3,   6,    9,    12,   15],
-    'Two Pairs':       [2,   4,    6,    8,    10],
-    'Tens or Better':  [1,   2,    3,    4,    5]
-}
+from tens_or_better import *
 
 
 # Graphical constants
@@ -159,6 +135,26 @@ class Card(object):
         """
 
         self.card = current_card
+
+    def get_suit(self):
+        """
+        Get card's suit
+
+        :return: card's suit
+        :type: string
+        """
+
+        return self.card[0]
+
+    def get_rank(self):
+        """
+        Get card's rank
+
+        :return: card's rank
+        :type: string
+        """
+
+        return self.card[1]
 
     def set_active(self, active=False):
         """
@@ -351,4 +347,10 @@ while game_loop:
         pygame.display.flip()
         time.sleep(ANIMATION_SPEED)
 
-    # Stage 5
+    # Stage 5: check for winning combinations
+    card_suits = []
+    card_ranks = []
+    for card in cards:
+        card_suits += card.get_suit()
+        card_ranks += card.get_rank()
+    combo = ComboCheck(card_suits, card_ranks)
