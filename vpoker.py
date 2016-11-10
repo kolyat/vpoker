@@ -3,7 +3,7 @@
 # See the file LICENSE.txt included in this distribution
 
 """
-Main unit of vpoker
+Main module of vpoker
 """
 
 import os
@@ -42,7 +42,8 @@ BACKGROUND_COLOR = (0, 65, 15)  # (0, 25, 50) - dark blue
 TABLE_BORDER_COLOR = FONT_COLOR = CARD_BACKGROUND_COLOR = (175, 175, 0)
 TABLE_SELECTED_COLOR = (0, 100, 20)
 CARD_ACTIVE_COLOR = (208, 113, 30)
-CARD_FONT_COLOR = (0, 0, 0)
+CARD_FONT_COLOR = WIN_FONT_COLOR = (0, 0, 0)
+WIN_COLOR = (200, 80, 30)
 
 
 # File paths
@@ -201,6 +202,9 @@ def draw_table():
     combination_rect = pygame.Rect(TABLE_X, TABLE_Y, COMBINATION_CELL_WIDTH,
                                    CELL_HEIGHT)
     for name in combination_names:
+        if name == win_combo:
+            pygame.draw.rect(table_surface, WIN_COLOR,
+                             combination_rect, 0)
         pygame.draw.rect(table_surface, TABLE_BORDER_COLOR, combination_rect,
                          BORDER_WIDTH)
         # Print combination's name
@@ -215,17 +219,26 @@ def draw_table():
                                    CELL_HEIGHT)
         for i, item in enumerate(poker_winnings[name], start=1):
             if coins == i:
-                pygame.draw.rect(table_surface, TABLE_SELECTED_COLOR,
-                                 winning_rect, 0)
+                if name == win_combo:
+                    pygame.draw.rect(table_surface, CARD_BACKGROUND_COLOR,
+                                     winning_rect, 0)
+                else:
+                    pygame.draw.rect(table_surface, TABLE_SELECTED_COLOR,
+                                     winning_rect, 0)
             pygame.draw.rect(table_surface, TABLE_BORDER_COLOR, winning_rect,
                              BORDER_WIDTH)
             # Print number of winning coins
-            text = font.render(str(item), ANTIALIASING, FONT_COLOR)
+            if coins == i and name == win_combo:
+                font.set_bold(True)
+                text = font.render(str(item), ANTIALIASING, WIN_FONT_COLOR)
+            else:
+                text = font.render(str(item), ANTIALIASING, FONT_COLOR)
             text_rect = text.get_rect()
             text_rect.centerx = winning_rect.centerx
             text_rect.centery = winning_rect.centery
-            winning_rect.left += WINNING_CELL_WIDTH - 1
             table_surface.blit(text, text_rect)
+            font.set_bold(False)
+            winning_rect.left += WINNING_CELL_WIDTH - 1
         combination_rect.top += CELL_HEIGHT - 1
     screen.blit(table_surface, (TABLE_SURFACE_X, TABLE_SURFACE_Y))
 
@@ -249,6 +262,7 @@ except pygame.error as error:
 game_loop = True
 while game_loop:
     coins = 1  # Number of inserted coins
+    win_combo = ''
     # Initialize playing deck
     deck = []
     for suit in suits:
@@ -347,10 +361,25 @@ while game_loop:
         pygame.display.flip()
         time.sleep(ANIMATION_SPEED)
 
-    # Stage 5: check for winning combinations
+    # Stage 5: check for winning combinations and show if any
     card_suits = []
     card_ranks = []
     for card in cards:
         card_suits += card.get_suit()
         card_ranks += card.get_rank()
-    combo = ComboCheck(card_suits, card_ranks)
+    win_combo = ComboCheck(card_suits, card_ranks)
+    if win_combo:
+        draw_table()
+    # Wait for player
+    wait = True
+    while wait:
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_RETURN:
+                    wait = False
+                if event.key == K_ESCAPE:
+                    pygame.event.post(QUIT)
+            if event.type == QUIT:
+                pygame.quit()
+                exit(0)
