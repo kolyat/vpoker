@@ -8,6 +8,7 @@ Tens or Better engine
 
 
 # Card parameters
+suit_list = ['S', 'C', 'H', 'D']
 suits = {
     'S': '♠',  # Spades
     'C': '♣',  # Clubs
@@ -74,8 +75,8 @@ class ComboCheck(object):
         for combination in combination_names:
             combo = combo_analytical_functions[combination]
             if combo:
-                break
-        return combo
+                return combo
+        return ''
 
     def royal_flush(self):
         """
