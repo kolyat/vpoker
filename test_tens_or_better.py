@@ -19,10 +19,10 @@ def generate_random_suits():
     :type: list
     """
 
-    my_suits = []
+    my_suits = list()
     random.seed(None)
     for i in range(5):
-        my_suits += suit_list[random.randint(0, len(suit_list)-1)]
+        my_suits.append(suit_list[random.randint(0, len(suit_list)-1)])
     return my_suits
 
 
@@ -34,10 +34,10 @@ def generate_random_ranks():
     :type: list
     """
 
-    my_ranks = []
+    my_ranks = list()
     random.seed(None)
     for i in range(5):
-        my_ranks += ranks[random.randint(0, len(ranks)-1)]
+        my_ranks.append(ranks[random.randint(0, len(ranks)-1)])
     return my_ranks
 
 
@@ -55,7 +55,6 @@ class TestComboCheck(unittest.TestCase):
     def test_royal_flush(self):
         """Tests for Royal Flush combo"""
 
-        # Perform positive tests
         self.assertEqual(self.ComboCheck(['S', 'S', 'S', 'S', 'S'],
                                          ['Q', 'K', 'A', 'J', '10']),
                          'Royal Flush')
@@ -68,26 +67,21 @@ class TestComboCheck(unittest.TestCase):
         self.assertEqual(self.ComboCheck(['D', 'D', 'D', 'D', 'D'],
                                          ['Q', 'K', 'A', 'J', '10']),
                          'Royal Flush')
-        # Negative tests
-        self.assertEqual(self.ComboCheck(['S', 'S', 'S', 'S', 'S'],
-                                         ['9', '10', 'J', 'Q', 'K']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['10', 'J', 'Q', 'K', 'A']), '')
 
     def test_straight_flush(self):
         """Tests for Straight Flush combo"""
 
-        for i in range(0, len(ranks) - 5, 1):
+        for i in range(0, len(self.ranks) - 5, 1):
             # Make an unshuffled hand with combo
             raw_test_hand = []
-            raw_test_hand += ranks[i:i+4]
+            raw_test_hand += self.ranks[i:i+5]
             # Shuffle hand
             random.seed(None)
             test_hand = []
             while raw_test_hand:
-                test_hand += raw_test_hand.pop(
-                    random.randint(0, len(raw_test_hand) - 1))
-            # Perform positive test
+                test_hand.append(raw_test_hand.pop(
+                    random.randint(0, len(raw_test_hand) - 1)))
+            # Perform tests
             self.assertEqual(self.ComboCheck(['S', 'S', 'S', 'S', 'S'],
                                              test_hand), 'Straight Flush')
             self.assertEqual(self.ComboCheck(['C', 'C', 'C', 'C', 'C'],
@@ -96,45 +90,37 @@ class TestComboCheck(unittest.TestCase):
                                              test_hand), 'Straight Flush')
             self.assertEqual(self.ComboCheck(['D', 'D', 'D', 'D', 'D'],
                                              test_hand), 'Straight Flush')
-        # Negative tests
-        self.assertEqual(self.ComboCheck(['S', 'S', 'S', 'S', 'S'],
-                                         ['10', 'J', 'Q', 'K', 'A']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['2', '3', '4', '5', '6']), '')
-        self.assertEqual(self.ComboCheck(['S', 'S', 'S', 'S', 'S'],
-                                         ['A', '2', '3', '4', '5']), '')
 
     def test_four_of_a_kind(self):
         """Tests for Four of a Kind combo"""
 
-        for rank in ranks:
+        for rank in self.ranks:
             # Select second rank
             random.seed(None)
             second_rank = []
             while True:
-                second_rank = ranks[random.randint(0, len(ranks)-1)]
+                second_rank = self.ranks[random.randint(0, len(self.ranks)-1)]
                 if second_rank != rank:
                     break
             # Create unshuffled hand
-            raw_test_hand = []
-            raw_test_hand += rank*4 + second_rank
+            raw_test_hand = list()
+            for i in range(4):
+                raw_test_hand.append(rank)
+            raw_test_hand.append(second_rank)
             # Shuffle hand
             test_hand = []
             while raw_test_hand:
-                test_hand += raw_test_hand.pop(
-                    random.randint(0, len(raw_test_hand) - 1))
-            # Perform positive test
+                test_hand.append(raw_test_hand.pop(
+                    random.randint(0, len(raw_test_hand) - 1)))
+            # Perform test
             self.assertEqual(self.ComboCheck(generate_random_suits(),
                                              test_hand),
                              'Four of a Kind')
-        # Negative tests
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['A', 'A', 'A', 'K', 'Q']), '')
 
     def test_full_house(self):
         """Tests for Full House combo"""
 
-        first_rank = list(ranks)
+        first_rank = list(self.ranks)
         while len(first_rank) > 1:
             # Get first rank
             first_card = first_rank.pop(0)
@@ -144,68 +130,62 @@ class TestComboCheck(unittest.TestCase):
                 second_card = second_rank.pop(0)
                 # Create unshuffled hand
                 random.seed(None)
-                raw_test_hand1 = []
-                raw_test_hand2 = []
-                raw_test_hand1 += first_card*2 + second_card*3
-                raw_test_hand2 += first_card*3 + second_card*2
+                raw_test_hand1 = list()
+                raw_test_hand2 = list()
+                for i in range(3):
+                    raw_test_hand1.append(first_card)
+                    raw_test_hand2.append(second_card)
+                for i in range(2):
+                    raw_test_hand1.append(second_card)
+                    raw_test_hand2.append(first_card)
                 # Shuffle hand
-                test_hand1 = []
-                test_hand2 = []
+                test_hand1 = list()
+                test_hand2 = list()
                 while raw_test_hand1 and raw_test_hand2:
-                    test_hand1 += raw_test_hand1.pop(
-                        random.randint(0, len(raw_test_hand1) - 1))
-                    test_hand2 += raw_test_hand2.pop(
-                        random.randint(0, len(raw_test_hand2) - 1))
-                # Perform positive test
+                    test_hand1.append(raw_test_hand1.pop(
+                        random.randint(0, len(raw_test_hand1) - 1)))
+                    test_hand2.append(raw_test_hand2.pop(
+                        random.randint(0, len(raw_test_hand2) - 1)))
+                # Perform tests
                 self.assertEqual(self.ComboCheck(generate_random_suits(),
                                                  test_hand1),
                                  'Full House')
                 self.assertEqual(self.ComboCheck(generate_random_suits(),
                                                  test_hand2),
                                  'Full House')
-        # Perform negative tests
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['2', '2', '3', '3', 'A']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['A', 'A', 'A', '2', '3']), '')
 
     def test_flush(self):
         """Tests for Flush combo"""
 
-        # Positive tests
         for suit in suit_list:
-            self.assertEqual(self.ComboCheck(suit*5, generate_random_ranks()),
-                             'Flush')
-        # Negative tests
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         generate_random_ranks()), '')
+            my_suit = list()
+            for i in range(5):
+                my_suit.append(suit)
+            self.assertEqual(self.ComboCheck(
+                my_suit, ['2', '5', '7', 'K', 'A']), 'Flush')
 
     def test_straight(self):
         """Tests for Straight combo"""
 
-        for i in range(0, len(ranks)-4, 1):
+        for i in range(0, len(self.ranks)-4, 1):
             # Make an unshuffled hand with combo
-            raw_test_hand = []
-            raw_test_hand += ranks[i:i+4]
+            raw_test_hand = list(self.ranks[i:i+5])
             # Shuffle hand
             random.seed(None)
             test_hand = []
             while raw_test_hand:
-                test_hand += raw_test_hand.pop(
-                    random.randint(0, len(raw_test_hand) - 1))
-            # Perform positive test
+                test_hand.append(raw_test_hand.pop(
+                    random.randint(0, len(raw_test_hand) - 1)))
+            # Perform test
             self.assertEqual(self.ComboCheck(generate_random_suits(),
                                              test_hand), 'Straight')
-        # Perform negative test
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['A', '2', '3', '4', '5']), '')
 
     def test_three_of_a_kind(self):
         """Tests for Three of a Kind combo"""
 
-        for rank in ranks:
+        for rank in self.ranks:
             # Prepare additional rank list to fill hand with two other ranks
-            other_ranks = list(ranks)
+            other_ranks = list(self.ranks)
             other_ranks.remove(rank)
             # Choose two other ranks that must differ from each other
             random.seed(None)
@@ -214,32 +194,24 @@ class TestComboCheck(unittest.TestCase):
             another_rank_2 = other_ranks.pop(
                 random.randint(0, len(other_ranks)-1))
             # Make a hand
-            raw_test_hand = []
-            raw_test_hand += rank*3 + another_rank_1 + another_rank_2
+            raw_test_hand = list()
+            for i in range(3):
+                raw_test_hand.append(rank)
+            raw_test_hand.append(another_rank_1)
+            raw_test_hand.append(another_rank_2)
             # Shuffle hand
-            test_hand = []
+            test_hand = list()
             while raw_test_hand:
-                test_hand += raw_test_hand.pop(
-                    random.randint(0, len(raw_test_hand)-1))
-            # Perform positive test
+                test_hand.append(raw_test_hand.pop(
+                    random.randint(0, len(raw_test_hand)-1)))
+            # Perform test
             self.assertEqual(self.ComboCheck(generate_random_suits(),
                                              test_hand), 'Three of a Kind')
-        # Perform negative tests
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['2', '3', '4', '5', '6']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['A', 'A', '4', '5', '6']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['K', 'K', '10', '10', 'J']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['Q', 'Q', 'Q', 'J', 'J']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['10', '10', '10', '10', 'A']), '')
 
     def test_two_pairs(self):
         """Tests for Two Pairs combo"""
 
-        first_rank = list(ranks)
+        first_rank = list(self.ranks)
         while len(first_rank) > 1:
             # Get first rank to make a pair
             first_card = first_rank.pop(0)
@@ -248,34 +220,26 @@ class TestComboCheck(unittest.TestCase):
                 # Get second rank to make a pair
                 second_card = second_rank.pop(0)
                 # Create list of available ranks for last card
-                other_ranks = ranks
+                other_ranks = list(self.ranks)
                 other_ranks.remove(first_card)
                 other_ranks.remove(second_card)
                 # Create unshuffled hand
                 random.seed(None)
-                raw_test_hand = []
-                raw_test_hand += first_card*2 + second_card*2 + \
-                    other_ranks[random.randint(0, len(other_ranks)-1)]
+                raw_test_hand = list()
+                for i in range(2):
+                    raw_test_hand.append(first_card)
+                    raw_test_hand.append(second_card)
+                raw_test_hand.append(
+                    other_ranks[random.randint(0, len(other_ranks)-1)])
                 # Shuffle hand
-                test_hand = []
+                test_hand = list()
                 while raw_test_hand:
-                    test_hand += raw_test_hand.pop(
-                        random.randint(0, len(raw_test_hand)-1))
-                # Perform positive test
+                    test_hand.append(raw_test_hand.pop(
+                        random.randint(0, len(raw_test_hand)-1)))
+                # Perform test
                 self.assertEqual(self.ComboCheck(generate_random_suits(),
                                                  test_hand),
                                  'Two Pairs')
-        # Perform negative tests
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['2', '3', '4', '5', '6']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['A', 'A', '4', '5', '6']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['3', '3', '3', '10', 'J']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['3', '3', '3', '2', '2']), '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
-                                         ['4', '4', '4', '4', 'A']), '')
 
     def test_tens_or_better(self):
         """Tests for Tens or Better combo"""

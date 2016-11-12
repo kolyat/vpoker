@@ -40,25 +40,21 @@ class ComboCheck(object):
     Class that check for winning combination
     """
 
-    def __init__(self, card_suits, card_ranks):
+    def __call__(self, card_suits, card_ranks):
         """
+        Check for winning combination and return result if any
+
         :param card_suits: card suits
         :type: list
         :param card_ranks: card ranks
         :type: list
-        """
-
-        self.card_suits = card_suits
-        self.card_ranks = card_ranks
-
-    def __call__(self):
-        """
-        Check for winning combination and return result if any
 
         :return: winning combination
         :type: string
         """
 
+        self.card_suits = card_suits
+        self.card_ranks = card_ranks
         combo_analytical_functions = {
             'Royal Flush':     self.royal_flush,
             'Straight Flush':  self.straight_flush,
@@ -70,12 +66,11 @@ class ComboCheck(object):
             'Two Pairs':       self.two_pairs,
             'Tens or Better':  self.tens_or_better
         }
-        combo = ''
 
         for combination in combination_names:
-            combo = combo_analytical_functions[combination]
-            if combo:
-                return combo
+            result = combo_analytical_functions[combination]()
+            if result:
+                return result
         return ''
 
     def royal_flush(self):
@@ -88,9 +83,9 @@ class ComboCheck(object):
 
         if self.card_suits in [['S', 'S', 'S', 'S', 'S'],
                                ['C', 'C', 'C', 'C', 'C'],
-                               ['H', 'H', 'H', 'H', 'S'],
+                               ['H', 'H', 'H', 'H', 'H'],
                                ['D', 'D', 'D', 'D', 'D']] \
-                and self.card_ranks in ['10', 'J', 'Q', 'K', 'A']:
+                and set(self.card_ranks) == {'10', 'J', 'Q', 'K', 'A'}:
             return 'Royal Flush'
         else:
             return ''
@@ -105,16 +100,16 @@ class ComboCheck(object):
 
         if self.card_suits in [['S', 'S', 'S', 'S', 'S'],
                                ['C', 'C', 'C', 'C', 'C'],
-                               ['H', 'H', 'H', 'H', 'S'],
+                               ['H', 'H', 'H', 'H', 'H'],
                                ['D', 'D', 'D', 'D', 'D']] \
-            and self.card_ranks in [['2', '3', '4', '5', '6'],
-                                    ['3', '4', '5', '6', '7'],
-                                    ['4', '5', '6', '7', '8'],
-                                    ['5', '6', '7', '8', '9'],
-                                    ['6', '7', '8', '9', '10'],
-                                    ['7', '8', '9', '10', 'J'],
-                                    ['8', '9', '10', 'J', 'Q'],
-                                    ['9', '10', 'J', 'Q', 'K']]:
+            and set(self.card_ranks) in [{'2', '3', '4', '5', '6'},
+                                         {'3', '4', '5', '6', '7'},
+                                         {'4', '5', '6', '7', '8'},
+                                         {'5', '6', '7', '8', '9'},
+                                         {'6', '7', '8', '9', '10'},
+                                         {'7', '8', '9', '10', 'J'},
+                                         {'8', '9', '10', 'J', 'Q'},
+                                         {'9', '10', 'J', 'Q', 'K'}]:
             return 'Straight Flush'
         else:
             return ''
@@ -130,8 +125,7 @@ class ComboCheck(object):
         for rank in ranks:
             if self.card_ranks.count(rank) == 4:
                 return 'Four of a Kind'
-            else:
-                return ''
+        return ''
 
     def full_house(self):
         """
@@ -144,7 +138,7 @@ class ComboCheck(object):
         card_ranks_num = []
         for rank in ranks:
             card_ranks_num.append(self.card_ranks.count(rank))
-        if [2, 3] in card_ranks_num:
+        if {2, 3}.issubset(set(card_ranks_num)):
             return 'Full House'
         else:
             return ''
@@ -159,7 +153,7 @@ class ComboCheck(object):
 
         if self.card_suits in [['S', 'S', 'S', 'S', 'S'],
                                ['C', 'C', 'C', 'C', 'C'],
-                               ['H', 'H', 'H', 'H', 'S'],
+                               ['H', 'H', 'H', 'H', 'H'],
                                ['D', 'D', 'D', 'D', 'D']]:
             return 'Flush'
         else:
@@ -173,15 +167,15 @@ class ComboCheck(object):
         :type: string
         """
 
-        if self.card_ranks in [['2', '3', '4', '5', '6'],
-                               ['3', '4', '5', '6', '7'],
-                               ['4', '5', '6', '7', '8'],
-                               ['5', '6', '7', '8', '9'],
-                               ['6', '7', '8', '9', '10'],
-                               ['7', '8', '9', '10', 'J'],
-                               ['8', '9', '10', 'J', 'Q'],
-                               ['9', '10', 'J', 'Q', 'K'],
-                               ['10', 'J', 'Q', 'K', 'A']]:
+        if set(self.card_ranks) in [{'2', '3', '4', '5', '6'},
+                                    {'3', '4', '5', '6', '7'},
+                                    {'4', '5', '6', '7', '8'},
+                                    {'5', '6', '7', '8', '9'},
+                                    {'6', '7', '8', '9', '10'},
+                                    {'7', '8', '9', '10', 'J'},
+                                    {'8', '9', '10', 'J', 'Q'},
+                                    {'9', '10', 'J', 'Q', 'K'},
+                                    {'10', 'J', 'Q', 'K', 'A'}]:
             return 'Straight'
         else:
             return ''
@@ -197,8 +191,7 @@ class ComboCheck(object):
         for rank in ranks:
             if self.card_ranks.count(rank) == 3:
                 return 'Three of a Kind'
-            else:
-                return ''
+        return ''
 
     def two_pairs(self):
         """
@@ -211,7 +204,8 @@ class ComboCheck(object):
         card_ranks_num = []
         for rank in ranks:
             card_ranks_num.append(self.card_ranks.count(rank))
-        if [2, 2] in card_ranks_num:
+        card_ranks_num.sort()
+        if card_ranks_num[-1] == 2 and card_ranks_num[-2] == 2:
             return 'Two Pairs'
         else:
             return ''
@@ -227,5 +221,4 @@ class ComboCheck(object):
         for rank in ['10', 'J', 'Q', 'K', 'A']:
             if self.card_ranks.count(rank) == 2:
                 return 'Tens or Better'
-            else:
-                return ''
+        return ''
