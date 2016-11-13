@@ -61,7 +61,7 @@ WIN_COLOR = (200, 80, 30)
 
 # File paths
 DATA_DIR = 'data'
-FONT_NAME = 'arial.ttf'
+FONT_NAME = r'fonts\LiberationSans-Regular.ttf'
 FONT_SIZE = 16
 ANTIALIASING = 0
 
