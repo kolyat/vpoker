@@ -11,28 +11,41 @@ import random
 import time
 import pygame
 from pygame.locals import *
+
 from tens_or_better import *
 
 
+#
 # Graphical constants
+#
 SCREEN_WIDTH = 640
 FPS = 24
-
-INDENTATION = 20
-COMBINATION_CELL_WIDTH = 200
+# Table dimensions
+COMBINATION_CELL_WIDTH = 180
 WINNING_CELL_WIDTH = 80
 CELL_HEIGHT = 30
 BORDER_WIDTH = 2
+# Card dimensions
+ORIGIN_CARD_WIDTH = 720
+ORIGIN_CARD_HEIGHT = 1080
+K = 0.12
+# CARD_BACKGROUND_WIDTH = 94
+# CARD_BACKGROUND_HEIGHT = 140
+CARD_WIDTH = int(ORIGIN_CARD_WIDTH * K)
+CARD_HEIGHT = int(ORIGIN_CARD_HEIGHT * K)
+CARD_BORDER = 10
+CARD_BACKGROUND_WIDTH = CARD_WIDTH + CARD_BORDER
+CARD_BACKGROUND_HEIGHT = CARD_HEIGHT + CARD_BORDER
+# Surfaces dimensions
+INDENTATION = 20
 TABLE_SURFACE_X = TABLE_SURFACE_Y = 0
-TABLE_X = TABLE_Y = INDENTATION
+TABLE_X = TABLE_SURFACE_X + INDENTATION
+TABLE_Y = TABLE_SURFACE_Y + INDENTATION
 TABLE_HEIGHT = CELL_HEIGHT * len(poker_winnings)
 TABLE_SURFACE_SIZE = (SCREEN_WIDTH, TABLE_HEIGHT + INDENTATION*2)
-CARD_BACKGROUND_WIDTH = 94
-CARD_BACKGROUND_HEIGHT = 140
-CARD_WIDTH = 86
-CARD_HEIGHT = 130
 CARDS_SURFACE_X = TABLE_SURFACE_X
 CARDS_SURFACE_Y = TABLE_SURFACE_SIZE[1]
+
 CARDS_SURFACE_SIZE = (SCREEN_WIDTH, CARD_BACKGROUND_HEIGHT + INDENTATION*2)
 
 DISPLAY_MODE = (SCREEN_WIDTH, TABLE_SURFACE_SIZE[1] + CARDS_SURFACE_SIZE[1])
@@ -218,13 +231,18 @@ def draw_table():
                                    combination_rect.top, WINNING_CELL_WIDTH,
                                    CELL_HEIGHT)
         for i, item in enumerate(poker_winnings[name], start=1):
-            if coins == i:
-                if name == win_combo:
-                    pygame.draw.rect(table_surface, CARD_BACKGROUND_COLOR,
-                                     winning_rect, 0)
-                else:
-                    pygame.draw.rect(table_surface, TABLE_SELECTED_COLOR,
-                                     winning_rect, 0)
+
+            if coins == i and name == win_combo:
+                pygame.draw.rect(table_surface, CARD_BACKGROUND_COLOR,
+                                 winning_rect, 0)
+            elif coins == i:
+                pygame.draw.rect(table_surface, TABLE_SELECTED_COLOR,
+                                 winning_rect, 0)
+            elif name == win_combo:
+                pygame.draw.rect(table_surface, WIN_COLOR,
+                                 winning_rect, 0)
+            else:
+                pass
             pygame.draw.rect(table_surface, TABLE_BORDER_COLOR, winning_rect,
                              BORDER_WIDTH)
             # Print number of winning coins
@@ -338,6 +356,7 @@ while game_loop:
                     wait = False
                 for card in cards:
                     card.draw()
+                pygame.display.flip()
             if event.type == QUIT:
                 pygame.quit()
                 exit(0)
@@ -362,14 +381,16 @@ while game_loop:
         time.sleep(ANIMATION_SPEED)
 
     # Stage 5: check for winning combinations and show if any
-    card_suits = []
-    card_ranks = []
+    card_suits = list()
+    card_ranks = list()
     for card in cards:
-        card_suits += card.get_suit()
-        card_ranks += card.get_rank()
-    win_combo = ComboCheck(card_suits, card_ranks)
+        card_suits.append(card.get_suit())
+        card_ranks.append(card.get_rank())
+    combo_check = ComboCheck()
+    win_combo = combo_check(card_suits, card_ranks)
     if win_combo:
         draw_table()
+        pygame.display.flip()
     # Wait for player
     wait = True
     while wait:
