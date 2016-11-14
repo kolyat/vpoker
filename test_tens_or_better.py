@@ -41,11 +41,38 @@ def generate_random_ranks():
     return my_ranks
 
 
+def generate_different_suits():
+    """
+    Create hand with 4 suits from list and 1 random
+
+    :return: 5 suits
+    :type: liat
+    """
+
+    my_suits = list()
+    for s in suit_list:
+        my_suits.append(s)
+    random.seed(None)
+    my_suits.append(suit_list[random.randint(0, len(suit_list)-1)])
+    return my_suits
+
+
+def generate_different_ranks():
+    """
+    Create hand with 'even' ranks
+
+    :return: 5 ranks
+    :type: list
+    """
+
+    return ['2', '4', '6', '8', '10']
+
+
 class TestComboCheck(unittest.TestCase):
     """Tests for class ComboCheck"""
 
     def setUp(self):
-        self.ranks = tuple(ranks)
+        self.ranks = ranks
         self.ComboCheck = ComboCheck()
 
     def tearDown(self):
@@ -113,7 +140,7 @@ class TestComboCheck(unittest.TestCase):
                 test_hand.append(raw_test_hand.pop(
                     random.randint(0, len(raw_test_hand) - 1)))
             # Perform test
-            self.assertEqual(self.ComboCheck(generate_random_suits(),
+            self.assertEqual(self.ComboCheck(generate_different_suits(),
                                              test_hand),
                              'Four of a Kind')
 
@@ -147,10 +174,10 @@ class TestComboCheck(unittest.TestCase):
                     test_hand2.append(raw_test_hand2.pop(
                         random.randint(0, len(raw_test_hand2) - 1)))
                 # Perform tests
-                self.assertEqual(self.ComboCheck(generate_random_suits(),
+                self.assertEqual(self.ComboCheck(generate_different_suits(),
                                                  test_hand1),
                                  'Full House')
-                self.assertEqual(self.ComboCheck(generate_random_suits(),
+                self.assertEqual(self.ComboCheck(generate_different_suits(),
                                                  test_hand2),
                                  'Full House')
 
@@ -162,7 +189,7 @@ class TestComboCheck(unittest.TestCase):
             for i in range(5):
                 my_suit.append(suit)
             self.assertEqual(self.ComboCheck(
-                my_suit, ['2', '5', '7', 'K', 'A']), 'Flush')
+                my_suit, generate_different_ranks()), 'Flush')
 
     def test_straight(self):
         """Tests for Straight combo"""
@@ -177,7 +204,7 @@ class TestComboCheck(unittest.TestCase):
                 test_hand.append(raw_test_hand.pop(
                     random.randint(0, len(raw_test_hand) - 1)))
             # Perform test
-            self.assertEqual(self.ComboCheck(generate_random_suits(),
+            self.assertEqual(self.ComboCheck(generate_different_suits(),
                                              test_hand), 'Straight')
 
     def test_three_of_a_kind(self):
@@ -205,7 +232,7 @@ class TestComboCheck(unittest.TestCase):
                 test_hand.append(raw_test_hand.pop(
                     random.randint(0, len(raw_test_hand)-1)))
             # Perform test
-            self.assertEqual(self.ComboCheck(generate_random_suits(),
+            self.assertEqual(self.ComboCheck(generate_different_suits(),
                                              test_hand), 'Three of a Kind')
 
     def test_two_pairs(self):
@@ -237,7 +264,7 @@ class TestComboCheck(unittest.TestCase):
                     test_hand.append(raw_test_hand.pop(
                         random.randint(0, len(raw_test_hand)-1)))
                 # Perform test
-                self.assertEqual(self.ComboCheck(generate_random_suits(),
+                self.assertEqual(self.ComboCheck(generate_different_suits(),
                                                  test_hand),
                                  'Two Pairs')
 
@@ -245,44 +272,44 @@ class TestComboCheck(unittest.TestCase):
         """Tests for Tens or Better combo"""
 
         # Positive tests
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['A', '2', 'A', '3', '4']),
                          'Tens or Better')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['K', '2', '3', 'K', '4']),
                          'Tens or Better')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['Q', '2', '3', '4', 'Q']),
                          'Tens or Better')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['2', 'J', '3', '4', 'J']),
                          'Tens or Better')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['2', '3', '10', '4', '10']),
                          'Tens or Better')
         # Negative tests
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['9', '9', 'Q', 'K', 'A']),
                          '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['Q', '8', '8', 'K', 'A']),
                          '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['Q', 'K', '7', '7', 'A']),
                          '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['Q', 'K', 'A', '6', '6']),
                          '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['Q', '5', 'K', '5', 'A']),
                          '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['4', 'Q', 'K', 'A', '4']),
                          '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['3', 'Q', 'K', '3', 'A']),
                          '')
-        self.assertEqual(self.ComboCheck(generate_random_suits(),
+        self.assertEqual(self.ComboCheck(generate_different_suits(),
                                          ['Q', '2', 'K', 'A', '2']),
                          '')
 

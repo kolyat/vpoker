@@ -7,20 +7,21 @@ Tens or Better engine
 """
 
 
+CAPTION = 'Tens or Better'
 # Card parameters
-suit_list = ['S', 'C', 'H', 'D']
+suit_list = ('S', 'C', 'H', 'D')
 suits = {
     'S': '♠',  # Spades
     'C': '♣',  # Clubs
     'H': '♥',  # Hearts
     'D': '♦'   # Diamonds
 }
-ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+ranks = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
 
 # Possible combinations
-combination_names = ['Royal Flush', 'Straight Flush', 'Four of a Kind',
+combination_names = ('Royal Flush', 'Straight Flush', 'Four of a Kind',
                      'Full House', 'Flush', 'Straight', 'Three of a Kind',
-                     'Two Pairs', 'Tens or Better']
+                     'Two Pairs', 'Tens or Better')
 # Table of winnings
 poker_winnings = {
     'Royal Flush':     [500, 1000, 2000, 3000, 4000],

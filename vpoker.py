@@ -140,6 +140,7 @@ class Card(object):
         status_rect.centery = self.centery + int(CARD_BACKGROUND_HEIGHT/2) +\
             int(status_rect.height/2) + int(INDENTATION/2)
         cards_surface.blit(status, (status_rect.left, status_rect.top))
+        pygame.display.flip()
 
     def set_card(self, current_card):
         """
@@ -261,17 +262,37 @@ def draw_table():
             winning_rect.left += WINNING_CELL_WIDTH - 1
         combination_rect.top += CELL_HEIGHT - 1
     screen.blit(table_surface, (TABLE_SURFACE_X, TABLE_SURFACE_Y))
+    pygame.display.flip()
+
+
+def init_deck():
+    """
+    Initialize playing deck with 52 cards
+
+    :return: deck with 52 cards
+    :type: list of tuples
+    """
+
+    raw_deck = []
+    for suit in suits:
+        for rank in ranks:
+            raw_deck.append(tuple(suit + rank))
+    return raw_deck
 
 
 # Initialize library and create main window
 pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode(DISPLAY_MODE)
-pygame.display.set_caption('Video Poker - Tens or Better')
+pygame.display.set_caption('Video Poker - ' + CAPTION)
 
 # Try to initialize game font
 try:
     font = pygame.font.Font(os.path.join(DATA_DIR, FONT_NAME), FONT_SIZE)
+except FileNotFoundError as sys_error:
+    print('File not found: ', os.path.join(DATA_DIR, FONT_NAME))
+    print(sys_error)
+    font = pygame.font.SysFont('None', FONT_SIZE)
 except pygame.error as error:
     print('Cannot load game font: ', os.path.join(DATA_DIR, FONT_NAME))
     print(error)
@@ -284,10 +305,7 @@ while game_loop:
     coins = 1  # Number of inserted coins
     win_combo = ''
     # Initialize playing deck
-    deck = []
-    for suit in suits:
-        for rank in ranks:
-            deck.append(tuple(suit + rank))
+    deck = init_deck()
     # Initialize random generator with current system time
     random.seed(None)
     # Initialize cards
@@ -323,17 +341,16 @@ while game_loop:
             if event.type == QUIT:
                 pygame.quit()
                 exit(0)
-        pygame.display.flip()
 
     # Stage 2: hand out cards, wait for player to hold some cards
     active_card = 0
-    cards[active_card].set_active(True)
     for card in cards:
         random_card = deck.pop(random.randint(0, len(deck)-1))
         card.set_card(random_card)
         card.draw()
-        pygame.display.flip()
         time.sleep(ANIMATION_SPEED)
+    cards[active_card].set_active(True)
+    cards[active_card].draw()
     wait = True
     while wait:
         clock.tick(FPS)
@@ -358,19 +375,17 @@ while game_loop:
                     wait = False
                 for card in cards:
                     card.draw()
-                pygame.display.flip()
             if event.type == QUIT:
                 pygame.quit()
                 exit(0)
-            pygame.display.flip()
     cards[active_card].set_active(False)
+    cards[active_card].draw()
 
     # Stage 3: remove cards that were not held
     for card in cards:
         if not card.get_held():
             card.set_card('BACK')
-        card.draw()
-    pygame.display.flip()
+            card.draw()
     time.sleep(ANIMATION_SPEED)
 
     # Stage 4: hand out new cards
@@ -378,9 +393,8 @@ while game_loop:
         if not card.get_held():
             random_card = deck.pop(random.randint(0, len(deck)-1))
             card.set_card(random_card)
-        card.draw()
-        pygame.display.flip()
-        time.sleep(ANIMATION_SPEED)
+            card.draw()
+            time.sleep(ANIMATION_SPEED)
 
     # Stage 5: check for winning combinations and show if any
     card_suits = list()
@@ -392,7 +406,6 @@ while game_loop:
     win_combo = combo_check(card_suits, card_ranks)
     if win_combo:
         draw_table()
-        pygame.display.flip()
     # Wait for player
     wait = True
     while wait:
