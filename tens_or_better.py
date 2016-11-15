@@ -52,6 +52,10 @@ class ComboCheck(object):
 
         :return: winning combination
         :type: string
+
+        :raise: TypeError: if card_suit/card_rank is not a list
+        :raise: ValueError: when number of elements in a list is not equal to 5
+        :raise: KeyError: when current suit/rank does not exist
         """
 
         # Check for correct type
