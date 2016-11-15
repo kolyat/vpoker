@@ -313,6 +313,32 @@ class TestComboCheck(unittest.TestCase):
                                          ['Q', '2', 'K', 'A', '2']),
                          '')
 
+    def test_negative(self):
+        """Negative scenarios"""
+
+        # Invalid type
+        self.assertRaises(TypeError, self.ComboCheck,
+                          3, generate_random_ranks())
+        self.assertRaises(TypeError, self.ComboCheck,
+                          generate_random_suits(), 3)
+        self.assertRaises(TypeError, self.ComboCheck,
+                          3, 3)
+
+        # Invalid length of list
+        self.assertRaises(ValueError, self.ComboCheck,
+                          [1, 2, 3, 4, 5, 6], generate_random_ranks())
+        self.assertRaises(ValueError, self.ComboCheck,
+                          generate_random_suits(), [1, 2, 3, 4, 5, 6])
+        self.assertRaises(ValueError, self.ComboCheck,
+                          [1, 2, 3, 4, 5, 6], [1, 2, 3, 4, 5, 6])
+
+        # Incorrect values
+        self.assertRaises(KeyError, self.ComboCheck,
+                          ['A', 'B', 'C', 'D', 'E'], generate_random_ranks())
+        self.assertRaises(KeyError, self.ComboCheck,
+                          generate_random_suits(), ['1', '11', 'C', 'B', 'X'])
+        self.assertRaises(KeyError, self.ComboCheck,
+                          ['A', 'B', 'C', 'D', 'E'], ['1', '2', 'C', 'B', 'X'])
 
 if __name__ == '__main__':
     unittest.main()
