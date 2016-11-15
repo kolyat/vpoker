@@ -54,6 +54,26 @@ class ComboCheck(object):
         :type: string
         """
 
+        # Check for correct type
+        if type(card_suits) != list:
+            raise TypeError('Card suits must be a list')
+        if type(card_ranks) != list:
+            raise TypeError('Card ranks must be a list')
+        # Check for list length
+        if len(card_suits) != 5:
+            raise ValueError('Number of elements in a list of card suits must'
+                             'be equal to 5')
+        if len(card_ranks) != 5:
+            raise ValueError('Number of elements in a list of card ranks must'
+                             'be equal to 5')
+        # Check values in list
+        for e in card_suits:
+            if e not in suit_list:
+                raise KeyError('Unknown card suit: ', e)
+        for e in card_ranks:
+            if e not in ranks:
+                raise KeyError('Unknown card rank: ', e)
+        # Init
         self.card_suits = card_suits
         self.card_ranks = card_ranks
         combo_analytical_functions = {
