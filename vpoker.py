@@ -77,19 +77,26 @@ class Card(object):
 
         :param centerx: x-coordinate of card's center, default = 0
         :type: int
+
         :arg centery: y-coordinate of card's center
         :type: int
         :arg active: currently selected card
         :type: bool
-        :arg card: represents playing card or it's back
-        :type: str ('BACK')
-        :type: tuple
+        :arg back: will show cards back if active (card is not defined)
+        :type: bool
+        :arg suit: card's suit
+        :type: str
+        :arg rank: card's rank
+        :type: str
         :arg: held: if kept in hand
+        :type: bool
         """
         self.centerx = centerx
         self.centery = int(CARD_BACKGROUND_HEIGHT/2)
         self.active = False
-        self.card = 'BACK'
+        self.back = True
+        self.suit = ''
+        self.rank = ''
         self.held = False
 
     def draw(self):
@@ -108,20 +115,25 @@ class Card(object):
                              background_rect, 0)
 
         # Try to load card's image
-        raw_image = pygame.image.load(
-            os.path.join(DATA_DIR, ''.join(self.card) + '.png'))
+        if self.back:
+            raw_image = pygame.image.load(
+                os.path.join(DATA_DIR, ''.join('BACK') + '.png'))
+        else:
+            raw_image = pygame.image.load(
+                os.path.join(DATA_DIR, ''.join(
+                    self.suit + self.rank) + '.png'))
         if raw_image:
             card_image = pygame.transform.scale(raw_image,
                                                 (CARD_WIDTH, CARD_HEIGHT))
         else:
             print('Cannot load image: ',
-                  os.path.join(DATA_DIR, (str(self.card) + '.png')))
+                  os.path.join(DATA_DIR, (self.suit + self.rank + '.png')))
             print('Using text instead')
-            if self.card == 'BACK':
+            if self.back:
                 card_image = font.render('BACK', ANTIALIASING,
                                          CARD_FONT_COLOR)
             else:
-                card_image = font.render((suits[self.card[0]] + self.card[1]),
+                card_image = font.render(suits[self.suit] + self.rank,
                                          ANTIALIASING, CARD_FONT_COLOR)
         # Draw image
         card_rect = card_image.get_rect()
@@ -147,11 +159,12 @@ class Card(object):
         Set card from playing deck
 
         :param current_card: card from deck
-        :type: str ('BACK')
         :type: tuple
         """
 
-        self.card = current_card
+        self.suit = current_card[0]
+        self.rank = current_card[1]
+        self.set_back(False)
 
     def get_suit(self):
         """
@@ -161,7 +174,7 @@ class Card(object):
         :type: string
         """
 
-        return self.card[0]
+        return self.suit
 
     def get_rank(self):
         """
@@ -171,7 +184,7 @@ class Card(object):
         :type: string
         """
 
-        return self.card[1]
+        return self.rank
 
     def set_active(self, active=False):
         """
@@ -202,6 +215,16 @@ class Card(object):
         """
 
         self.held = hold
+
+    def set_back(self, back=True):
+        """
+        Sets card back parameter
+
+        :param back: back parameter
+        :type: bool
+        """
+
+        self.back = back
 
 
 def draw_table():
@@ -276,7 +299,10 @@ def init_deck():
     raw_deck = []
     for suit in suits:
         for rank in ranks:
-            raw_deck.append(tuple(suit + rank))
+            raw_card = list()
+            raw_card.append(suit)
+            raw_card.append(rank)
+            raw_deck.append(tuple(raw_card))
     return raw_deck
 
 
@@ -384,7 +410,7 @@ while game_loop:
     # Stage 3: remove cards that were not held
     for card in cards:
         if not card.get_held():
-            card.set_card('BACK')
+            card.set_back(True)
             card.draw()
     time.sleep(ANIMATION_SPEED)
 
