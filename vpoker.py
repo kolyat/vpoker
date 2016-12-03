@@ -306,12 +306,139 @@ def init_deck():
     return raw_deck
 
 
+def main():
+    """Main function"""
+
+    # Init variables
+    clock = pygame.time.Clock()
+    global coins
+    global win_combo
+    global cards_surface
+
+    # Main game loop
+    game_loop = True
+    while game_loop:
+        coins = 1
+        win_combo = ''
+        # Initialize playing deck
+        deck = init_deck()
+        # Initialize random generator with current system time
+        random.seed(None)
+        # Initialize cards
+        cards = []
+        for x in range(int(INDENTATION + CARD_BACKGROUND_WIDTH / 2),
+                       (CARD_BACKGROUND_WIDTH + DISTANCE_BETWEEN_CARDS) * 5,
+                       CARD_BACKGROUND_WIDTH + DISTANCE_BETWEEN_CARDS):
+            cards.append(Card(x))
+
+        # Draw surface for cards
+        cards_surface.fill(BACKGROUND_COLOR)
+        # cards_surface = cards_surface.convert()
+
+        # Stage 1: insert coins to select amount of winning
+        draw_table()
+        for card in cards:
+            card.draw()
+        wait = True
+        while wait:
+            clock.tick(FPS)
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_UP:
+                        if coins < 5:
+                            coins += 1
+                    if event.key == K_DOWN:
+                        if coins > 1:
+                            coins -= 1
+                    if event.key == K_RETURN:
+                        wait = False
+                    draw_table()
+                if event.type == QUIT:
+                    pygame.quit()
+                    exit(0)
+
+        # Stage 2: hand out cards, wait for player to hold some cards
+        active_card = 0
+        for card in cards:
+            random_card = deck.pop(random.randint(0, len(deck)-1))
+            card.set_card(random_card)
+            card.draw()
+            time.sleep(ANIMATION_SPEED)
+        cards[active_card].set_active(True)
+        cards[active_card].draw()
+        wait = True
+        while wait:
+            clock.tick(FPS)
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_LEFT:
+                        if active_card > 0:
+                            cards[active_card].set_active(False)
+                            active_card -= 1
+                            cards[active_card].set_active(True)
+                    if event.key == K_RIGHT:
+                        if active_card < 4:
+                            cards[active_card].set_active(False)
+                            active_card += 1
+                            cards[active_card].set_active(True)
+                    if event.key == K_SPACE:
+                        if cards[active_card].get_held():
+                            cards[active_card].set_held(False)
+                        else:
+                            cards[active_card].set_held(True)
+                    if event.key == K_RETURN:
+                        wait = False
+                    for card in cards:
+                        card.draw()
+                if event.type == QUIT:
+                    pygame.quit()
+                    exit(0)
+        cards[active_card].set_active(False)
+        cards[active_card].draw()
+
+        # Stage 3: remove cards that were not held
+        for card in cards:
+            if not card.get_held():
+                card.set_back(True)
+                card.draw()
+        time.sleep(ANIMATION_SPEED)
+
+        # Stage 4: hand out new cards
+        for card in cards:
+            if not card.get_held():
+                random_card = deck.pop(random.randint(0, len(deck)-1))
+                card.set_card(random_card)
+                card.draw()
+                time.sleep(ANIMATION_SPEED)
+
+        # Stage 5: check for winning combinations and show if any
+        card_suits = list()
+        card_ranks = list()
+        for card in cards:
+            card_suits.append(card.get_suit())
+            card_ranks.append(card.get_rank())
+        combo_check = ComboCheck()
+        win_combo = combo_check(card_suits, card_ranks)
+        if win_combo:
+            draw_table()
+        # Wait for player
+        wait = True
+        while wait:
+            clock.tick(FPS)
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_RETURN:
+                        wait = False
+                    if event.key == K_ESCAPE:
+                        pygame.event.post(QUIT)
+                if event.type == QUIT:
+                    pygame.quit()
+                    exit(0)
+
 # Initialize library and create main window
 pygame.init()
-clock = pygame.time.Clock()
 screen = pygame.display.set_mode(DISPLAY_MODE)
 pygame.display.set_caption('Video Poker - ' + CAPTION)
-
 # Try to initialize game font
 try:
     font = pygame.font.Font(os.path.join(DATA_DIR, FONT_NAME), FONT_SIZE)
@@ -324,124 +451,12 @@ except pygame.error as error:
     print(error)
     print('Using system default font')
     font = pygame.font.SysFont('None', FONT_SIZE)
-
-# Main game loop
-game_loop = True
-while game_loop:
-    coins = 1  # Number of inserted coins
-    win_combo = ''
-    # Initialize playing deck
-    deck = init_deck()
-    # Initialize random generator with current system time
-    random.seed(None)
-    # Initialize cards
-    cards = []
-    for x in range(int(INDENTATION + CARD_BACKGROUND_WIDTH / 2),
-                   (CARD_BACKGROUND_WIDTH + DISTANCE_BETWEEN_CARDS) * 5,
-                   CARD_BACKGROUND_WIDTH + DISTANCE_BETWEEN_CARDS):
-        cards.append(Card(x))
-
-    # Draw surface for cards
-    cards_surface = pygame.Surface(CARDS_SURFACE_SIZE)
-    cards_surface.fill(BACKGROUND_COLOR)
-    # cards_surface = cards_surface.convert()
-
-    # Stage 1: insert coins to select amount of winning
-    draw_table()
-    for card in cards:
-        card.draw()
-    wait = True
-    while wait:
-        clock.tick(FPS)
-        for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                if event.key == K_UP:
-                    if coins < 5:
-                        coins += 1
-                if event.key == K_DOWN:
-                    if coins > 1:
-                        coins -= 1
-                if event.key == K_RETURN:
-                    wait = False
-                draw_table()
-            if event.type == QUIT:
-                pygame.quit()
-                exit(0)
-
-    # Stage 2: hand out cards, wait for player to hold some cards
-    active_card = 0
-    for card in cards:
-        random_card = deck.pop(random.randint(0, len(deck)-1))
-        card.set_card(random_card)
-        card.draw()
-        time.sleep(ANIMATION_SPEED)
-    cards[active_card].set_active(True)
-    cards[active_card].draw()
-    wait = True
-    while wait:
-        clock.tick(FPS)
-        for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                if event.key == K_LEFT:
-                    if active_card > 0:
-                        cards[active_card].set_active(False)
-                        active_card -= 1
-                        cards[active_card].set_active(True)
-                if event.key == K_RIGHT:
-                    if active_card < 4:
-                        cards[active_card].set_active(False)
-                        active_card += 1
-                        cards[active_card].set_active(True)
-                if event.key == K_SPACE:
-                    if cards[active_card].get_held():
-                        cards[active_card].set_held(False)
-                    else:
-                        cards[active_card].set_held(True)
-                if event.key == K_RETURN:
-                    wait = False
-                for card in cards:
-                    card.draw()
-            if event.type == QUIT:
-                pygame.quit()
-                exit(0)
-    cards[active_card].set_active(False)
-    cards[active_card].draw()
-
-    # Stage 3: remove cards that were not held
-    for card in cards:
-        if not card.get_held():
-            card.set_back(True)
-            card.draw()
-    time.sleep(ANIMATION_SPEED)
-
-    # Stage 4: hand out new cards
-    for card in cards:
-        if not card.get_held():
-            random_card = deck.pop(random.randint(0, len(deck)-1))
-            card.set_card(random_card)
-            card.draw()
-            time.sleep(ANIMATION_SPEED)
-
-    # Stage 5: check for winning combinations and show if any
-    card_suits = list()
-    card_ranks = list()
-    for card in cards:
-        card_suits.append(card.get_suit())
-        card_ranks.append(card.get_rank())
-    combo_check = ComboCheck()
-    win_combo = combo_check(card_suits, card_ranks)
-    if win_combo:
-        draw_table()
-    # Wait for player
-    wait = True
-    while wait:
-        clock.tick(FPS)
-        for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                if event.key == K_RETURN:
-                    wait = False
-                if event.key == K_ESCAPE:
-                    pygame.event.post(QUIT)
-            if event.type == QUIT:
-                pygame.quit()
-                exit(0)
+#
+# Global variables
+#
+coins = 1  # Number of inserted coins
+win_combo = ''
+cards_surface = pygame.Surface(CARDS_SURFACE_SIZE)
+# Start game
+if __name__ == '__main__':
+    main()
