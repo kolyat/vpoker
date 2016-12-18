@@ -91,7 +91,14 @@ class Card(object):
         :arg: held: if kept in hand
         :type: bool
         """
-        self.centerx = centerx
+        if type(centerx) not in (int, float):
+            self.centerx = 0
+        elif centerx < 0:
+            self.centerx = 0
+        elif centerx > SCREEN_WIDTH:
+            self.centerx = int(SCREEN_WIDTH)
+        else:
+            self.centerx = int(centerx)
         self.centery = int(CARD_BACKGROUND_HEIGHT/2)
         self.active = False
         self.back = True
@@ -160,8 +167,20 @@ class Card(object):
 
         :param current_card: card from deck
         :type: tuple
+
+        :raises TypeError: if 'current_card' is not tuple
+        :raises ValueError: if length of 'current_card' is not equal to 2
+        :raises KeyError: if 'current_card' contains not valid suit/rank
         """
 
+        if type(current_card) != tuple:
+            raise TypeError
+        if len(current_card) != 2:
+            raise ValueError
+        if current_card[0] not in suit_list:
+            raise KeyError
+        if current_card[1] not in ranks:
+            raise KeyError
         self.suit = current_card[0]
         self.rank = current_card[1]
         self.set_back(False)
@@ -192,8 +211,12 @@ class Card(object):
 
         :param: active: card's state
         :type: bool
+
+        :raises TypeError: if 'active' is not bool
         """
 
+        if type(active) != bool:
+            raise TypeError
         self.active = active
 
     def get_held(self):
@@ -212,8 +235,12 @@ class Card(object):
 
         :param hold: 'held' status
         :type: bool
+
+        :raises TypeError: if 'hold' is not boolean
         """
 
+        if type(hold) != bool:
+            raise TypeError
         self.held = hold
 
     def set_back(self, back=True):
@@ -222,8 +249,12 @@ class Card(object):
 
         :param back: back parameter
         :type: bool
+
+        :raises TypeError: if 'back' is not bool
         """
 
+        if type(back) != bool:
+            raise TypeError
         self.back = back
 
 
