@@ -123,25 +123,33 @@ class Card(object):
 
         # Try to load card's image
         if self.back:
-            raw_image = pygame.image.load(
-                os.path.join(DATA_DIR, ''.join('BACK') + '.png'))
+            try:
+                raw_image = pygame.image.load(
+                    os.path.join(DATA_DIR, ''.join('BACK') + '.png'))
+            except pygame.error:
+                print('Cannot load image: ',
+                      os.path.join(DATA_DIR, ''.join('BACK') + '.png'))
+                raw_image = None
         else:
-            raw_image = pygame.image.load(
-                os.path.join(DATA_DIR, ''.join(
-                    self.suit + self.rank) + '.png'))
+            try:
+                raw_image = pygame.image.load(
+                    os.path.join(DATA_DIR, ''.join(
+                        self.suit + self.rank) + '.png'))
+            except pygame.error:
+                print('Cannot load image: ',
+                      os.path.join(DATA_DIR, (self.suit + self.rank + '.png')))
+                raw_image = None
         if raw_image:
             card_image = pygame.transform.scale(raw_image,
                                                 (CARD_WIDTH, CARD_HEIGHT))
         else:
-            print('Cannot load image: ',
-                  os.path.join(DATA_DIR, (self.suit + self.rank + '.png')))
             print('Using text instead')
             if self.back:
-                card_image = font.render('BACK', ANTIALIASING,
-                                         CARD_FONT_COLOR)
+                card_image = card_font.render('BACK', ANTIALIASING,
+                                              CARD_FONT_COLOR)
             else:
-                card_image = font.render(suits[self.suit] + self.rank,
-                                         ANTIALIASING, CARD_FONT_COLOR)
+                card_image = card_font.render(suits[self.suit] + self.rank,
+                                              ANTIALIASING, CARD_FONT_COLOR)
         # Draw image
         card_rect = card_image.get_rect()
         card_rect.centerx = self.centerx
@@ -383,6 +391,8 @@ def main():
                             coins -= 1
                     if event.key == K_RETURN:
                         wait = False
+                    if event.key == K_ESCAPE:
+                        pygame.event.post(pygame.event.Event(QUIT))
                     draw_table()
                 if event.type == QUIT:
                     pygame.quit()
@@ -419,6 +429,8 @@ def main():
                             cards[active_card].set_held(True)
                     if event.key == K_RETURN:
                         wait = False
+                    if event.key == K_ESCAPE:
+                        pygame.event.post(pygame.event.Event(QUIT))
                     for card in cards:
                         card.draw()
                 if event.type == QUIT:
@@ -461,7 +473,7 @@ def main():
                     if event.key == K_RETURN:
                         wait = False
                     if event.key == K_ESCAPE:
-                        pygame.event.post(QUIT)
+                        pygame.event.post(pygame.event.Event(QUIT))
                 if event.type == QUIT:
                     pygame.quit()
                     exit(0)
@@ -473,15 +485,13 @@ pygame.display.set_caption('Video Poker - ' + CAPTION)
 # Try to initialize game font
 try:
     font = pygame.font.Font(os.path.join(DATA_DIR, FONT_NAME), FONT_SIZE)
-except FileNotFoundError as sys_error:
+    card_font = pygame.font.Font(os.path.join(DATA_DIR, FONT_NAME),
+                                 FONT_SIZE*2)
+except OSError as sys_error:
     print('File not found: ', os.path.join(DATA_DIR, FONT_NAME))
     print(sys_error)
     font = pygame.font.SysFont('None', FONT_SIZE)
-except pygame.error as error:
-    print('Cannot load game font: ', os.path.join(DATA_DIR, FONT_NAME))
-    print(error)
-    print('Using system default font')
-    font = pygame.font.SysFont('None', FONT_SIZE)
+    card_font = pygame.font.SysFont('None', FONT_SIZE*2)
 #
 # Global variables
 #
