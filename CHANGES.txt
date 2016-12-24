@@ -1,2 +1,5 @@
-2016.10.19
+2016-12-25
+v0.1 - initial release
+
+2016-10-19
 Project is started
