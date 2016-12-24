@@ -431,8 +431,8 @@ def main():
                         wait = False
                     if event.key == K_ESCAPE:
                         pygame.event.post(pygame.event.Event(QUIT))
-                    for card in cards:
-                        card.draw()
+                for card in cards:
+                    card.draw()
                 if event.type == QUIT:
                     pygame.quit()
                     exit(0)
