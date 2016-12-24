@@ -489,7 +489,6 @@ try:
                                  FONT_SIZE*2)
 except OSError as sys_error:
     print('File not found: ', os.path.join(DATA_DIR, FONT_NAME))
-    print(sys_error)
     font = pygame.font.SysFont('None', FONT_SIZE)
     card_font = pygame.font.SysFont('None', FONT_SIZE*2)
 #
