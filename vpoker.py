@@ -6,14 +6,12 @@
 Main module of vpoker
 """
 
+import sys
 import os
 import random
 import time
 import pygame
 from pygame.locals import *
-
-from tens_or_better import *
-
 
 #
 # Graphical constants
@@ -39,7 +37,7 @@ CARD_BACKGROUND_HEIGHT = CARD_HEIGHT + CARD_BORDER
 # Surfaces dimensions
 INDENTATION = 20
 TABLE_SURFACE_X = TABLE_SURFACE_Y = 0
-TABLE_HEIGHT = CELL_HEIGHT * len(poker_winnings)
+TABLE_HEIGHT = CELL_HEIGHT * 9
 CARDS_SURFACE_X = TABLE_SURFACE_X
 CARDS_SURFACE_Y = TABLE_HEIGHT + INDENTATION*2
 DISTANCE_BETWEEN_CARDS = int(CARD_BACKGROUND_WIDTH/10)
@@ -345,7 +343,7 @@ def init_deck():
     return raw_deck
 
 
-def main():
+def game():
     """Main function"""
 
     # Init variables
@@ -478,25 +476,77 @@ def main():
                     pygame.quit()
                     exit(0)
 
-# Initialize library and create main window
-pygame.init()
-screen = pygame.display.set_mode(DISPLAY_MODE)
-pygame.display.set_caption('Video Poker - ' + CAPTION)
-# Try to initialize game font
-try:
-    font = pygame.font.Font(os.path.join(DATA_DIR, FONT_NAME), FONT_SIZE)
-    card_font = pygame.font.Font(os.path.join(DATA_DIR, FONT_NAME),
-                                 FONT_SIZE*2)
-except OSError as sys_error:
-    print('File not found: ', os.path.join(DATA_DIR, FONT_NAME))
-    font = pygame.font.SysFont('None', FONT_SIZE)
-    card_font = pygame.font.SysFont('None', FONT_SIZE*2)
-#
-# Global variables
-#
-coins = 1  # Number of inserted coins
-win_combo = ''
-cards_surface = pygame.Surface(CARDS_SURFACE_SIZE)
-# Start game
+
+def menu():
+    """
+    Video poker type selection menu
+
+    :return: name of poker type
+    :type: string
+    """
+
+    def clrscr():
+        """Clear screen"""
+        if sys.platform.startswith('linux') or \
+                sys.platform.startswith('darwin'):
+            os.system('clear')
+        if sys.platform.startswith('win'):
+            os.system('cls')
+
+    menu_items = ('1', '2', '0')
+    poker_types = {
+        '0': None,
+        '1': 'Tens or Better',
+        '2': 'Jacks or Better'
+    }
+    item = ''
+
+    while item not in menu_items:
+        clrscr()
+        print()
+        print('======')
+        print('vpoker')
+        print('======')
+        print()
+        print()
+        print('Select video poker type')
+        print()
+        print('{} - {}'.format(menu_items[0], poker_types[menu_items[0]]))
+        print('{} - {}'.format(menu_items[1], poker_types[menu_items[1]]))
+        print('{} - Exit'.format(menu_items[2]))
+        print()
+        item = input('> ', )
+    return poker_types[item]
+
 if __name__ == '__main__':
-    main()
+    # Select poker type
+    m = menu()
+    if m == 'Tens or Better':
+        from tens_or_better import *
+    elif m == 'Jacks or Better':
+        from jacks_or_better import *
+    else:
+        exit(0)
+    # Constant reinit
+    TABLE_HEIGHT = CELL_HEIGHT * len(poker_winnings)
+    # Initialize library and create main window
+    pygame.init()
+    screen = pygame.display.set_mode(DISPLAY_MODE)
+    pygame.display.set_caption('Video Poker - ' + CAPTION)
+    # Try to initialize game font
+    try:
+        font = pygame.font.Font(os.path.join(DATA_DIR, FONT_NAME), FONT_SIZE)
+        card_font = pygame.font.Font(os.path.join(DATA_DIR, FONT_NAME),
+                                     FONT_SIZE * 2)
+    except OSError as sys_error:
+        print('File not found: ', os.path.join(DATA_DIR, FONT_NAME))
+        font = pygame.font.SysFont('None', FONT_SIZE)
+        card_font = pygame.font.SysFont('None', FONT_SIZE * 2)
+    #
+    # Global variables
+    #
+    coins = 1  # Number of inserted coins
+    win_combo = ''
+    cards_surface = pygame.Surface(CARDS_SURFACE_SIZE)
+    # Start game
+    game()
