@@ -518,6 +518,18 @@ def menu():
         item = input('> ', )
     return poker_types[item]
 
+
+# For testing purposes
+if __name__ == 'vpoker':
+    suit_list = ('S', 'C', 'H', 'D')
+    suits = {
+        'S': '♠',
+        'C': '♣',
+        'H': '♥',
+        'D': '♦'
+    }
+    ranks = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
+
 if __name__ == '__main__':
     # Select poker type
     m = menu()
