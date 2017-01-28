@@ -1,3 +1,7 @@
+2017-01-29 - v0.2
+* Add 'Jacks or Better' poker type
+* Implement start menu with poker type selection
+
 2016-12-25
 v0.1 - initial release
 
