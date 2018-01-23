@@ -147,7 +147,7 @@ class Card(object):
         :param: active: card's state
         :type active: bool
 
-        :raises TypeError: if 'active' is not bool
+        :raise TypeError: 'active' is not bool
         """
         if type(active) != bool:
             raise TypeError
@@ -167,7 +167,7 @@ class Card(object):
         :param hold: 'held' status
         :type hold: bool
 
-        :raises TypeError: if 'hold' is not boolean
+        :raise TypeError: 'hold' is not boolean
         """
         if type(hold) != bool:
             raise TypeError
@@ -179,7 +179,7 @@ class Card(object):
         :param back: back parameter
         :type back: bool
 
-        :raises TypeError: if 'back' is not bool
+        :raise TypeError: 'back' is not bool
         """
         if type(back) != bool:
             raise TypeError
@@ -369,7 +369,6 @@ def game():
         for card in cards:
             card_suits.append(card.get_suit())
             card_ranks.append(card.get_rank())
-        combo_check = ComboCheck()
         win_combo = combo_check(card_suits, card_ranks)
         if win_combo:
             draw_table()
@@ -450,9 +449,11 @@ if __name__ == '__main__':
     # Select poker type
     m = menu()
     if m == 'Tens or Better':
-        from tens_or_better import *
+        from engine.tens_or_better import *
+        combo_check = TensOrBetter()
     elif m == 'Jacks or Better':
-        from jacks_or_better import *
+        from engine.jacks_or_better import *
+        combo_check = JacksOrBetter()
     else:
         exit(0)
     # Constant reinit
