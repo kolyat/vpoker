@@ -6,31 +6,10 @@
 
 import unittest
 import ddt
+from tests import tools
 
 from vpoker import CARD_BACKGROUND_HEIGHT, SCREEN_WIDTH
 from vpoker import Card, init_deck
-
-
-class DataList(list):
-    """Custom list with __name__ attribute, which is added by
-    prepare_test_data()
-    """
-    pass
-
-
-def prepare_test_data(*test_data):
-    """Generator to prepare data for DDT
-
-    :param test_data: tuples with name of the test, input value and expected
-                      output value
-
-    :return: named list with input value and expected output value
-    """
-    for td in test_data:
-        _test_name, _input, _expected = td
-        data_list = DataList([_input, _expected])
-        setattr(data_list, '__name__', _test_name)
-        yield data_list
 
 
 @ddt.ddt
@@ -55,7 +34,7 @@ class TestCard(unittest.TestCase):
         self.assertEqual('', self.card.rank)
         self.assertEqual(False, self.card.held)
 
-    @ddt.data(*prepare_test_data(
+    @ddt.data(*tools.prepare_test_data(
         ('negative_int', -1, 0),
         ('zero', 0, 0),
         ('float', 10.5, 10),
@@ -80,7 +59,7 @@ class TestCard(unittest.TestCase):
         self.assertEqual(self.sample_card[1], self.card.rank)
         self.assertEqual(False, self.card.back)
 
-    @ddt.data(*prepare_test_data(
+    @ddt.data(*tools.prepare_test_data(
         ('wrong_type', 1, TypeError),
         ('wrong_length', (1, 2, 3), ValueError),
         ('wrong_suit', ('A', '10'), KeyError),
