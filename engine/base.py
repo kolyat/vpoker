@@ -21,7 +21,7 @@ class RankOrBetter(object):
     Method rank_or_better() is abstract and should be reimplemented
     """
     suits_flush = [['S']*5, ['C']*5, ['H']*5, ['D']*5]
-    ranks_straight = [set(ranks[i:i+5]) for i in range(8)]
+    ranks_straight = [set(ranks[i:i+5]) for i in range(9)]
 
     def __init__(self):
         self.analytical_sequence = (
