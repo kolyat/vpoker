@@ -24,7 +24,7 @@ class RankOrBetter(object):
     ranks_straight = [set(ranks[i:i+5]) for i in range(8)]
 
     def __init__(self):
-        self.combo_analytical_functions = (
+        self.analytical_sequence = (
             self.royal_flush,
             self.straight_flush,
             self.four_of_a_kind,
@@ -73,7 +73,7 @@ class RankOrBetter(object):
         # Init
         self.card_suits = card_suits
         self.card_ranks = card_ranks
-        for fun in self.combo_analytical_functions:
+        for fun in self.analytical_sequence:
             result = fun()
             if result:
                 return result
