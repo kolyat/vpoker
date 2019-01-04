@@ -8,6 +8,7 @@ import sys
 import os
 import random
 import time
+import collections
 import logging
 import pygame
 from pygame.locals import *
@@ -401,14 +402,13 @@ def menu():
         if sys.platform.startswith('win'):
             os.system('cls')
 
-    menu_items = ('1', '2', '0')
-    poker_types = {
-        '0': None,
-        '1': 'Tens or Better',
-        '2': 'Jacks or Better'
-    }
+    poker_types = collections.OrderedDict((
+        ('1', 'Tens or Better'),
+        ('2', 'Jacks or Better'),
+        ('0', 'Exit')
+    ))
     item = ''
-    while item not in menu_items:
+    while item not in poker_types.keys():
         clrscr()
         print()
         print('======')
@@ -418,9 +418,8 @@ def menu():
         print()
         print('Select video poker type')
         print()
-        print('{} - {}'.format(menu_items[0], poker_types[menu_items[0]]))
-        print('{} - {}'.format(menu_items[1], poker_types[menu_items[1]]))
-        print('{} - Exit'.format(menu_items[2]))
+        for k, v in poker_types.items():
+            print(' - '.join((k, v)))
         print()
         item = input('> ', )
     return poker_types[item]
@@ -428,13 +427,13 @@ def menu():
 
 # For testing purposes
 if __name__ == 'vpoker':
-    suit_list = ('S', 'C', 'H', 'D')
     suits = {
         'S': '♠',
         'C': '♣',
         'H': '♥',
         'D': '♦'
     }
+    suit_list = suits.keys()
     ranks = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
 
 if __name__ == '__main__':
