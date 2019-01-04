@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2018 Kirill 'Kolyat' Kiselnikov
+# Copyright (c) 2016-2019 Kirill 'Kolyat' Kiselnikov
 # This file is the part of vpoker, released under modified MIT license
 # See the file LICENSE.txt included in this distribution
 
