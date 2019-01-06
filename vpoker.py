@@ -10,12 +10,53 @@ import random
 import time
 import collections
 import logging
+import sqlite3
 import pygame
 from pygame.locals import *
 from settings import *
 
 
-class Card(object):
+class Dbase:
+    player = 'player'
+    creds = None
+
+    def __init__(self, f):
+        self.conn = sqlite3.connect(f)
+        self.cursor = self.conn.cursor()
+        try:
+            self.cursor.execute('SELECT creds FROM players WHERE player=?',
+                                (self.player,))
+            self.creds = self.cursor.fetchone()[0]
+        except sqlite3.OperationalError:
+            self.cursor.execute(
+                'CREATE TABLE players'
+                ' (player TEXT NOT NULL UNIQUE, creds BIGINT)'
+            )
+
+    def get_creds(self):
+        return self.creds
+
+    def set_creds(self, c):
+        self.creds = c
+
+    def decrease_creds(self):
+        self.set_creds(self.get_creds() - 1)
+
+    def increase_creds(self):
+        self.set_creds(self.get_creds() + 1)
+
+    def update_creds(self):
+        self.cursor.execute(
+            'INSERT OR REPLACE INTO players (player, creds) VALUES (?, ?)',
+            (self.player, self.creds)
+        )
+        self.conn.commit()
+
+    def __del__(self):
+        self.conn.close()
+
+
+class Card:
     """Represents playing card"""
 
     def __init__(self, centerx=0):
@@ -188,12 +229,20 @@ class Card(object):
 
 
 def draw_table():
-    """Draw table with winning combinations
+    """Draw table with winning combinations and show available creds
     """
+    global dbase
+    global table_surface
     # Draw surface for winning combinations table
-    table_surface = pygame.Surface(TABLE_SURFACE_SIZE)
     table_surface.fill(BACKGROUND_COLOR)
     # table_surface = table_surface.convert()
+    # Print available creds
+    text = font.render('Creds: {}'.format(dbase.get_creds()),
+                       ANTIALIASING, FONT_COLOR)
+    text_rect = text.get_rect()
+    text_rect.centerx = INDENTATION + int(text.get_width()/2)
+    text_rect.centery = CREDS_Y
+    table_surface.blit(text, text_rect)
     # Draw cell for winning combination's name
     combination_rect = pygame.Rect(TABLE_X, TABLE_Y, COMBINATION_CELL_WIDTH,
                                    CELL_HEIGHT)
@@ -243,6 +292,19 @@ def draw_table():
     pygame.display.flip()
 
 
+def show_message():
+    """Show message if no creds left
+    """
+    global table_surface
+    text = font.render('No creds left', ANTIALIASING, FONT_COLOR)
+    text_rect = text.get_rect()
+    text_rect.centerx = INDENTATION + int(text.get_width()/2)
+    text_rect.centery = MESSAGE_Y
+    table_surface.blit(text, text_rect)
+    screen.blit(table_surface, (TABLE_SURFACE_X, TABLE_SURFACE_Y))
+    pygame.display.flip()
+
+
 def init_deck():
     """Initialize playing deck with 52 cards
 
@@ -257,13 +319,13 @@ def game():
     """
     # Init variables
     clock = pygame.time.Clock()
+    global dbase
     global coins
     global win_combo
     global cards_surface
     # Main game loop
-    game_loop = True
-    while game_loop:
-        coins = 1
+    while True:
+        coins = 0
         win_combo = ''
         # Initialize playing deck
         deck = init_deck()
@@ -284,17 +346,27 @@ def game():
         draw_table()
         for card in cards:
             card.draw()
+        if dbase.get_creds() < 1:
+            show_message()
+            while True:
+                clock.tick(FPS)
+                for event in pygame.event.get():
+                    if event.type == KEYDOWN:
+                        pygame.quit()
+                        exit(0)
         wait = True
         while wait:
             clock.tick(FPS)
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
                     if event.key == K_UP:
-                        if coins < 5:
+                        if coins < 5 and dbase.get_creds() > 0:
                             coins += 1
+                            dbase.decrease_creds()
                     if event.key == K_DOWN:
-                        if coins > 1:
+                        if coins > 0:
                             coins -= 1
+                            dbase.increase_creds()
                     if event.key == K_RETURN:
                         wait = False
                     if event.key == K_ESCAPE:
@@ -306,6 +378,7 @@ def game():
         #
         # Stage 2: hand out cards, wait for player to hold some cards
         #
+        dbase.update_creds()
         active_card = 0
         for card in cards:
             random_card = deck.pop(random.randint(0, len(deck)-1))
@@ -365,13 +438,16 @@ def game():
         #
         # Stage 5: check for winning combinations and show if any
         #
-        card_suits = list()
-        card_ranks = list()
+        card_suits = []
+        card_ranks = []
         for card in cards:
             card_suits.append(card.get_suit())
             card_ranks.append(card.get_rank())
         win_combo = combo_check(card_suits, card_ranks)
         if win_combo:
+            dbase.set_creds(
+                dbase.get_creds() + poker_winnings[win_combo][coins-1])
+            dbase.update_creds()
             draw_table()
         # Wait for player
         wait = True
@@ -389,18 +465,46 @@ def game():
 
 
 def menu():
-    """Video poker type selection menu
+    """Main menu
 
-    :return: name of poker type
+    :return: game and poker types
     :type: str
     """
+
     def clrscr():
-        """Clear screen"""
+        """Clear screen and show title
+        """
         if sys.platform.startswith('linux') or \
                 sys.platform.startswith('darwin'):
             os.system('clear')
         if sys.platform.startswith('win'):
             os.system('cls')
+        print()
+        print('======')
+        print('vpoker')
+        print('======')
+        print()
+        print()
+
+    global dbase
+    if type(dbase.creds) == int:
+        game_types = collections.OrderedDict((
+            ('1', 'Continue game'),
+            ('2', 'New game'),
+            ('0', 'Exit')
+        ))
+        item = ''
+        while item not in game_types.keys():
+            clrscr()
+            for k, v in game_types.items():
+                print(' - '.join((k, v)))
+            print()
+            item = input('> ', )
+        game_type = game_types[item]
+        if game_type == 'Exit':
+            return game_type, 'Exit'
+    else:
+        game_type = 'New game'
 
     poker_types = collections.OrderedDict((
         ('1', 'Tens or Better'),
@@ -410,19 +514,14 @@ def menu():
     item = ''
     while item not in poker_types.keys():
         clrscr()
-        print()
-        print('======')
-        print('vpoker')
-        print('======')
-        print()
-        print()
         print('Select video poker type')
         print()
         for k, v in poker_types.items():
             print(' - '.join((k, v)))
         print()
         item = input('> ', )
-    return poker_types[item]
+    poker_type = poker_types[item]
+    return game_type, poker_type
 
 
 # For testing purposes
@@ -445,14 +544,24 @@ if __name__ == '__main__':
         datefmt='%Y-%m-%d %H:%M:%S',
         level=logging.ERROR
     )
-    # Select poker type
-    m = menu()
-    if m == 'Tens or Better':
+    dbase = Dbase(DB_FILE)
+    # Call main menu
+    game_t, poker_t = menu()
+    # Initialize poker engine
+    if poker_t == 'Tens or Better':
         from engine.tens_or_better import *
         combo_check = TensOrBetter()
-    elif m == 'Jacks or Better':
+    elif poker_t == 'Jacks or Better':
         from engine.jacks_or_better import *
         combo_check = JacksOrBetter()
+    else:
+        exit(0)
+    # Initialize player
+    if game_t == 'Continue game':
+        pass
+    elif game_t == 'New game':
+        dbase.set_creds(INITIAL_CREDS)
+        dbase.update_creds()
     else:
         exit(0)
     # Constant reinit
@@ -473,8 +582,9 @@ if __name__ == '__main__':
     #
     # Global variables
     #
-    coins = 1  # Number of inserted coins
+    coins = 0  # Number of inserted coins
     win_combo = ''
+    table_surface = pygame.Surface(TABLE_SURFACE_SIZE)
     cards_surface = pygame.Surface(CARDS_SURFACE_SIZE)
     # Start game
     game()
