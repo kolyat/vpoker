@@ -78,10 +78,31 @@ class Card:
         self.active = False
         # Show card's back when card is not defined
         self.back = True
+        self.back_image = self.load_image('back')
         self.suit = ''
         self.rank = ''
+        self.card_image = None
         # If stays on hand
         self.held = False
+
+    @staticmethod
+    def load_image(name):
+        """Load card image from file
+
+        :param name: card's name
+
+        :return: rendered image object
+        """
+        path = os.path.join(DATA_DIR, name + '.png')
+        try:
+            raw_image = pygame.image.load(path)
+            return pygame.transform.scale(raw_image, (CARD_WIDTH, CARD_HEIGHT))
+        except pygame.error:
+            logging.error('Cannot load image: {}'.format(path))
+            logging.error(
+                'Using text instead of image: {}'.format(name.upper()))
+            return card_font.render(
+                name.upper(), ANTIALIASING, CARD_FONT_COLOR)
 
     def draw(self):
         """Draw card with background and text
@@ -97,38 +118,11 @@ class Card:
         else:
             pygame.draw.rect(cards_surface, CARD_BACKGROUND_COLOR,
                              background_rect, 0)
-        # Try to load card's image
-        if self.back:
-            try:
-                raw_image = pygame.image.load(
-                    os.path.join(DATA_DIR, ''.join('BACK') + '.png'))
-            except pygame.error:
-                logging.error('Cannot load image: %s',
-                              os.path.join(DATA_DIR, ''.join('BACK') + '.png'))
-                raw_image = None
-        else:
-            try:
-                raw_image = pygame.image.load(
-                    os.path.join(DATA_DIR, ''.join(
-                        self.suit + self.rank) + '.png'))
-            except pygame.error:
-                logging.error(
-                    'Cannot load image: %s',
-                    os.path.join(DATA_DIR, (self.suit + self.rank + '.png'))
-                )
-                raw_image = None
-        if raw_image:
-            card_image = pygame.transform.scale(raw_image,
-                                                (CARD_WIDTH, CARD_HEIGHT))
-        else:
-            logging.error('Using text instead of image')
-            if self.back:
-                card_image = card_font.render('BACK', ANTIALIASING,
-                                              CARD_FONT_COLOR)
-            else:
-                card_image = card_font.render(suits[self.suit] + self.rank,
-                                              ANTIALIASING, CARD_FONT_COLOR)
         # Draw image
+        if self.back:
+            card_image = self.back_image
+        else:
+            card_image = self.card_image
         card_rect = card_image.get_rect()
         card_rect.centerx = self.centerx
         card_rect.centery = self.centery
@@ -147,7 +141,7 @@ class Card:
         pygame.display.flip()
 
     def set_card(self, current_card):
-        """Set card from playing deck
+        """Set card from playing deck and load it's image
 
         :param current_card: card from deck
         :type current_card: tuple
@@ -165,6 +159,7 @@ class Card:
         if current_card[1] not in ranks:
             raise KeyError
         self.suit, self.rank = current_card
+        self.card_image = self.load_image(self.suit + self.rank)
         self.set_back(False)
 
     def get_suit(self):
@@ -217,6 +212,7 @@ class Card:
 
     def set_back(self, back=True):
         """Set card's back parameter
+        Reset card's image object if True
 
         :param back: back parameter
         :type back: bool
@@ -226,6 +222,8 @@ class Card:
         if type(back) != bool:
             raise TypeError
         self.back = back
+        if back:
+            self.card_image = None
 
 
 def draw_table():
@@ -370,7 +368,7 @@ def game():
                     if event.key == K_RETURN:
                         wait = False
                     if event.key == K_ESCAPE:
-                        pygame.event.post(pygame.event.Event(QUIT))
+                        pygame.event.post(pygame.event.Event(QUIT, {}))
                     draw_table()
                 if event.type == QUIT:
                     pygame.quit()
@@ -410,7 +408,7 @@ def game():
                     if event.key == K_RETURN:
                         wait = False
                     if event.key == K_ESCAPE:
-                        pygame.event.post(pygame.event.Event(QUIT))
+                        pygame.event.post(pygame.event.Event(QUIT, {}))
                 for card in cards:
                     card.draw()
                 if event.type == QUIT:
@@ -458,7 +456,7 @@ def game():
                     if event.key == K_RETURN:
                         wait = False
                     if event.key == K_ESCAPE:
-                        pygame.event.post(pygame.event.Event(QUIT))
+                        pygame.event.post(pygame.event.Event(QUIT, {}))
                 if event.type == QUIT:
                     pygame.quit()
                     exit(0)

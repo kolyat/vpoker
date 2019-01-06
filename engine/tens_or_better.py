@@ -8,6 +8,8 @@ from .base import *
 
 
 CAPTION = 'Tens or Better'
+BACKGROUND_COLOR = (0, 25, 50)
+
 # Possible combinations
 combination_names = (
     'Royal Flush',
