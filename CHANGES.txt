@@ -1,3 +1,7 @@
+2019-01-07 - v0.3
+* Add game creds
+* Optimize graphics and animation
+
 2017-01-29 - v0.2
 * Add 'Jacks or Better' poker type
 * Implement start menu with poker type selection
