@@ -6,6 +6,7 @@
 
 import random
 from engine.base import suit_list, ranks
+suit_list = tuple(suit_list)
 
 
 class DataList(list):

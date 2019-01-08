@@ -144,12 +144,10 @@ class DeucesWild(BaseEngine):
         :return: 'Full House'
         :type: str
         """
-        card_ranks_num = []
-        for rank in ranks:
-            card_ranks_num.append(self.card_ranks.count(rank))
+        card_ranks_num = [self.card_ranks.count(rank) for rank in ranks]
+        card_ranks_set = set(card_ranks_num) - {0}
         for s, d in [({1, 2}, 2), ({2, 2}, 1), ({2, 3}, 0)]:
-            if s.issubset(set(card_ranks_num)) \
-                    and len(card_ranks_num) == len(s) and self.deuces == d:
+            if card_ranks_set == s and self.deuces == d:
                 return 'Full House'
         return ''
 
@@ -171,7 +169,9 @@ class DeucesWild(BaseEngine):
         :type: str
         """
         for rank in self.ranks_straight:
-            if (set(self.card_ranks).issubset(rank) and self.deuces > 0) or \
+            if (set(self.card_ranks).issubset(rank)
+                and len(self.card_ranks) == len(set(self.card_ranks))
+                and self.deuces > 0) or \
                     (set(self.card_ranks) in self.ranks_straight
                      and self.deuces == 0):
                 return 'Straight'

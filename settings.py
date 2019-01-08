@@ -4,6 +4,8 @@
 
 """Various game settings"""
 
+import os
+
 #
 # Graphical constants
 #
@@ -53,12 +55,13 @@ WIN_COLOR = (200, 80, 30)
 #
 # Font paths and options
 #
-DATA_DIR = 'data'
-FONT_NAME = r'fonts\LiberationSans-Regular.ttf'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+FONT_NAME = os.path.join(DATA_DIR, 'fonts', 'LiberationSans-Regular.ttf')
 FONT_SIZE = 16
 ANTIALIASING = 0
 #
 # Player options
 #
-DB_FILE = 'vpoker.db'
+DB_FILE = os.path.join(BASE_DIR, 'vpoker.db')
 INITIAL_CREDS = 120
