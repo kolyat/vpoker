@@ -59,7 +59,8 @@ def data_full_house():
         triples.append([r]*3)
     raw = [(i[0]+i[1]) for i in itertools.product(pairs, triples)]
     raw = filter(lambda x: len(set(x)) > 1, raw)
-    raw = [(tools.generate_random_suits(), r) for r in map(tools.shuffle, raw)]
+    raw = [(tools.generate_different_suits(), r)
+           for r in map(tools.shuffle, raw)]
     return [('{}_{}'.format(''.join(s), ''.join(r)), s, r) for s, r in raw]
 
 
@@ -86,7 +87,7 @@ def data_three_of_a_kind():
             if another_rank not in _test_ranks:
                 _test_ranks.append(another_rank)
         _test_ranks = tools.shuffle(_test_ranks)
-        _test_suits = tools.generate_random_suits()
+        _test_suits = tools.generate_different_suits()
         _test_data.append(
             ('{}_{}'.format(''.join(_test_suits), ''.join(_test_ranks)),
              _test_suits, _test_ranks)
@@ -105,7 +106,8 @@ def data_two_pairs():
             r = ranks[random.randint(0, len(ranks)-1)]
             if r not in raw[i]:
                 raw[i].append(r)
-    raw = [(tools.generate_random_suits(), r) for r in map(tools.shuffle, raw)]
+    raw = [(tools.generate_different_suits(), r)
+           for r in map(tools.shuffle, raw)]
     return [('{}_{}'.format(''.join(s), ''.join(r)), s, r) for s, r in raw]
 
 
