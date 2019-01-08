@@ -4,6 +4,7 @@
 types:
 * Tens or Better
 * Jacks or Better
+* Deuces Wild
 
 ### Requirements
 

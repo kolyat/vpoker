@@ -366,7 +366,8 @@ def game():
                             coins -= 1
                             dbase.increase_creds()
                     if event.key == K_RETURN:
-                        wait = False
+                        if coins > 0:
+                            wait = False
                     if event.key == K_ESCAPE:
                         pygame.event.post(pygame.event.Event(QUIT, {}))
                     draw_table()
@@ -507,6 +508,7 @@ def menu():
     poker_types = collections.OrderedDict((
         ('1', 'Tens or Better'),
         ('2', 'Jacks or Better'),
+        ('3', 'Deuces Wild'),
         ('0', 'Exit')
     ))
     item = ''
@@ -552,6 +554,9 @@ if __name__ == '__main__':
     elif poker_t == 'Jacks or Better':
         from engine.jacks_or_better import *
         combo_check = JacksOrBetter()
+    elif poker_t == 'Deuces Wild':
+        from engine.deuces_wild import *
+        combo_check = DeucesWild()
     else:
         exit(0)
     # Initialize player
@@ -563,7 +568,7 @@ if __name__ == '__main__':
     else:
         exit(0)
     # Constant reinit
-    TABLE_HEIGHT = CELL_HEIGHT * len(poker_winnings)
+    # TABLE_HEIGHT = CELL_HEIGHT * len(poker_winnings)
     # Initialize library and create main window
     pygame.init()
     screen = pygame.display.set_mode(DISPLAY_MODE)

@@ -15,37 +15,20 @@ suit_list = suits.keys()
 ranks = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
 
 
-class RankOrBetter(object):
-    """Abstract class that checks for winning combination in such poker type as
-    'any rank or better' (e.g., 'Tens or Better')
-    Method rank_or_better() is abstract and should be reimplemented
-    """
+class BaseEngine:
+    """Base class for game engines"""
+
     suits_flush = [['S']*5, ['C']*5, ['H']*5, ['D']*5]
     ranks_straight = [set(ranks[i:i+5]) for i in range(9)]
 
-    def __init__(self):
-        self.analytical_sequence = (
-            self.royal_flush,
-            self.straight_flush,
-            self.four_of_a_kind,
-            self.full_house,
-            self.flush,
-            self.straight,
-            self.three_of_a_kind,
-            self.two_pairs,
-            self.rank_or_better
-        )
-
     def __call__(self, card_suits, card_ranks):
-        """Check for winning combination and return result if any
+        """Entry point with necessary checks, should be overridden with
+        super().__call__(card_suits, card_ranks)
 
         :param card_suits: card suits
         :type card_suits: list
         :param card_ranks: card ranks
         :type card_ranks: list
-
-        :return: winning combination
-        :type: str
 
         :raise: TypeError: card_suit/card_rank is not a list
         :raise: ValueError: number of elements in a list is not equal to 5
@@ -70,7 +53,34 @@ class RankOrBetter(object):
         for e in card_ranks:
             if e not in ranks:
                 raise KeyError('Unknown card rank: ', e)
-        # Init
+
+
+class RankOrBetter(BaseEngine):
+    """Abstract class that checks for winning combination in such poker type as
+    'any rank or better' (e.g., 'Tens or Better')
+    Method rank_or_better() is abstract and should be reimplemented
+    """
+
+    def __init__(self):
+        self.analytical_sequence = (
+            self.royal_flush,
+            self.straight_flush,
+            self.four_of_a_kind,
+            self.full_house,
+            self.flush,
+            self.straight,
+            self.three_of_a_kind,
+            self.two_pairs,
+            self.rank_or_better
+        )
+
+    def __call__(self, card_suits, card_ranks):
+        """Check for winning combination and return result if any
+
+        :return: winning combination
+        :type: str
+        """
+        super().__call__(card_suits, card_ranks)
         self.card_suits = card_suits
         self.card_ranks = card_ranks
         for fun in self.analytical_sequence:
