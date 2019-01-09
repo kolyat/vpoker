@@ -28,7 +28,9 @@ combination_names = poker_winnings.keys()
 
 
 class DeucesWild(BaseEngine):
-    """Deuces Wild game engine"""
+    """Deuces Wild game engine
+    """
+    ranks_straight = [set(ranks[i:i+5]) for i in range(1, 9)]
 
     def __init__(self):
         self.analytical_sequence = (
@@ -120,9 +122,11 @@ class DeucesWild(BaseEngine):
         :return: 'Straight Flush'
         :type: str
         """
+        ranks_straight = \
+            self.ranks_straight[:len(self.ranks_straight)-self.deuces-1]
         for suit in self.suits_flush:
-            for rank in self.ranks_straight:
-                if self.deuces > 0 and set(self.card_suits) == set(suit) \
+            for rank in ranks_straight:
+                if set(self.card_suits) == set(suit) \
                         and set(self.card_ranks).issubset(rank):
                     return 'Straight Flush'
         return ''

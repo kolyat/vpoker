@@ -16,10 +16,9 @@ ranks = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
 
 
 class BaseEngine:
-    """Base class for game engines"""
-
+    """Base class for game engines
+    """
     suits_flush = [['S']*5, ['C']*5, ['H']*5, ['D']*5]
-    ranks_straight = [set(ranks[i:i+5]) for i in range(9)]
 
     def __call__(self, card_suits, card_ranks):
         """Entry point with necessary checks, should be overridden with
@@ -60,6 +59,7 @@ class RankOrBetter(BaseEngine):
     'any rank or better' (e.g., 'Tens or Better')
     Method rank_or_better() is abstract and should be reimplemented
     """
+    ranks_straight = [set(ranks[i:i+5]) for i in range(9)]
 
     def __init__(self):
         self.analytical_sequence = (
