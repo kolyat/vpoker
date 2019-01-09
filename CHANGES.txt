@@ -1,3 +1,7 @@
+2019-01-09 - v0.4
+* Add 'Deuces Wild' poker
+* Bug fixes
+
 2019-01-07 - v0.3
 * Add game creds
 * Optimize graphics and animation
