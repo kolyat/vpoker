@@ -59,7 +59,10 @@ def generate_different_suits():
     """
     _suits = list(suit_list)
     random.seed(None)
-    _suits.append(suit_list[random.randint(0, len(suit_list)-1)])
+    s = _suits[3]
+    while s == _suits[3]:
+        s = suit_list[random.randint(0, len(suit_list)-1)]
+    _suits += s
     return _suits
 
 
@@ -69,7 +72,7 @@ def generate_different_ranks():
     :return: 5 ranks
     :type: list
     """
-    return ['2', '4', '6', '8', '10']
+    return ['3', '6', '9', 'Q', '5']
 
 
 def shuffle(unshuffled):
